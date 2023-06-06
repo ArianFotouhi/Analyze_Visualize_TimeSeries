@@ -8,33 +8,37 @@
     <h1>Time Series Analysis</h1>
     
     <!-- Add filter controls here if needed -->
+    <label for="country-filter">Country:</label>
+    <select id="country-filter" name="country-filter">
+        <option value="">All</option>
+        {% for country in countries %}
+            <option value="{{ country }}">{{ country }}</option>
+        {% endfor %}
+    </select>
     
     <div id="chart"></div>
     
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        // Assume 'data' variable contains the time series data to be plotted
         var data = JSON.parse('{{ data | tojson }}');
 
         var x = data.map(function(d) { return d.Date; });
         var y = data.map(function(d) { return d.Volume; });
-        
         var f1 = data.map(function(d) { return d.Country; });
         var f2 = data.map(function(d) { return d.Low; });
 
-        
-            
-            // Create the plot using Plotly.js
-            var trace = {
-                x: x,
-                y: y,
-                text: f1.map(function(value, index) {
-                    return 'Country: ' + value + '<br>' + 'Low: ' + f2[index];
-                }),
-                hovertemplate: '%{text}',
-                type: 'scatter',
-                mode: 'lines',
-                name: 'Time Series'
-            };
+        // Create the plot using Plotly.js
+        var trace = {
+            x: x,
+            y: y,
+            text: f1.map(function(value, index) {
+                return 'Country: ' + value + '<br>' + 'Low: ' + f2[index];
+            }),
+            hovertemplate: '%{text}',
+            type: 'scatter',
+            mode: 'lines',
+            name: 'Time Series'
+        };
         var layout = {
             title: 'Time Series Plot',
             xaxis: {
@@ -45,6 +49,23 @@
             }
         };
         Plotly.newPlot('chart', [trace], layout);
+
+        $(document).ready(function() {
+            $('#country-filter').on('change', function() {
+                var selectedCountry = $(this).val();
+                $.ajax({
+                    url: '/update_plot',
+                    type: 'POST',
+                    data: { country: selectedCountry },
+                    success: function(response) {
+                        Plotly.newPlot('chart', [response], layout);
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+            });
+        });
     </script>
 </body>
 </html>
