@@ -18,6 +18,16 @@ def authenticate(username, password):
         return True
     return False
 
+def data_render():
+    time_series_data = [
+        {'date': '2022-01-01', 'value': 3},
+        {'date': '2022-01-02', 'value': 15},
+        {'date': '2022-01-03', 'value': 12},
+        {'date': '2022-01-04', 'value': 14},
+        {'date': '2022-01-05', 'value': 25},
+        {'date': '2022-01-06', 'value': 8},
+        ]
+    return time_series_data
 
 #Routes
 
@@ -53,17 +63,11 @@ def visual():
 
         return redirect('/login')
 
-    time_series_data = [
-        {'date': '2022-01-01', 'value': 10},
-        {'date': '2022-01-02', 'value': 15},
-        {'date': '2022-01-03', 'value': 12},
-        {'date': '2022-01-04', 'value': 14},
-        {'date': '2022-01-05', 'value': 25},
-        {'date': '2022-01-06', 'value': 8},
-        ]
+    data = data_render()
+
             
     # Pass the time series data to the template
-    return render_template('visual.html', data=time_series_data)
+    return render_template('visual.html', data=data)
 
 
 
