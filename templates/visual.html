@@ -3,6 +3,34 @@
 <head>
     <title>Time Series Analysis</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        .plot {
+            width: 400px; /* Adjust the width of the plot */
+            height: 300px; /* Adjust the height of the plot */
+            display: inline-block; /* Display plots in a row */
+            position: relative; /* Add position relative */
+        }
+
+        .percentage {
+            position: absolute; /* Add position absolute */
+            top: 10px; /* Adjust the top position of the percentage text */
+            right: 10px; /* Adjust the right position of the percentage text */
+            font-size: 16px; /* Adjust the font size of the percentage text */
+            font-weight: bold; /* Add font weight to the percentage text */
+            color: green; /* Set initial color as green */
+        }
+
+        .arrow {
+            position: absolute; /* Add position absolute */
+            top: 14px; /* Adjust the top position of the arrow */
+            right: 60px; /* Adjust the right position of the arrow */
+            font-size: 18px; /* Adjust the font size of the arrow */
+        }
+
+        .arrow.red {
+            color: red; /* Set color as red for negative growth */
+        }
+    </style>
 </head>
 <body>
     <h1>Time Series Analysis</h1>
@@ -16,56 +44,134 @@
         {% endfor %}
     </select>
     
-    <div id="chart"></div>
+    <div id="chart-container">
+        {% for country in countries %}
+            <div id="{{ country }}" class="plot"></div>
+        {% endfor %}
+    </div>
     
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         var data = JSON.parse('{{ data | tojson }}');
+        var countries = {{ countries | tojson }};
 
-        var x = data.map(function(d) { return d.Date; });
-        var y = data.map(function(d) { return d.Volume; });
-        var f1 = data.map(function(d) { return d.Country; });
-        var f2 = data.map(function(d) { return d.Low; });
+        // Create a plot for each country
+        countries.forEach(function(country) {
+            var countryData = data.filter(function(d) {
+                return d.Country === country;
+            });
 
-        // Create the plot using Plotly.js
-        var trace = {
-            x: x,
-            y: y,
-            text: f1.map(function(value, index) {
-                return 'Country: ' + value + '<br>' + 'Low: ' + f2[index];
-            }),
-            hovertemplate: '%{text}',
-            type: 'scatter',
-            mode: 'lines',
-            name: 'Time Series'
-        };
-        var layout = {
-            title: 'Time Series Plot',
-            xaxis: {
-                title: 'Date'
-            },
-            yaxis: {
-                title: 'Rate'
-            }
-        };
-        Plotly.newPlot('chart', [trace], layout);
+            var x = countryData.map(function(d) { return d.Date; });
+            var y = countryData.map(function(d) { return d.Volume; });
+            var f1 = countryData.map(function(d) { return d.Country; });
+            var f2 = countryData.map(function(d) { return d.Low; });
+
+            var trace = {
+                x: x,
+                y: y,
+                text: getPlotText(countryData), // Call a helper function to generate the text array
+                hovertemplate: '%{text}', // Set the hover template to display the text array
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Time Series'
+            };
+            var layout = {
+                title: 'Time Series Plot - ' + country,
+                xaxis: {
+                    title: 'Date'
+                },
+                yaxis: {
+                    title: 'Rate'
+                },
+                // Apply the tickformat to the x-axis
+                xaxis_tickformat: '%Y-%m', // Display month and year
+                annotations: getAnnotations(countryData), // Call a helper function to generate the annotations
+            };
+
+            Plotly.newPlot(country, [trace], layout);
+        });
 
         $(document).ready(function() {
             $('#country-filter').on('change', function() {
                 var selectedCountry = $(this).val();
-                $.ajax({
-                    url: '/update_plot',
-                    type: 'POST',
-                    data: { country: selectedCountry },
-                    success: function(response) {
-                        Plotly.newPlot('chart', [response], layout);
-                    },
-                    error: function(error) {
-                        console.log(error);
-                    }
-                });
+                if (selectedCountry) {
+                    $('.plot').hide();
+                    $('#' + selectedCountry).show();
+                } else {
+                    $('.plot').show();
+                }
             });
         });
+
+        // Helper function to generate the text array with percentage and arrow symbols
+        function getPlotText(countryData) {
+            var lastData = countryData[countryData.length - 1];
+            var previousData = countryData[countryData.length - 2];
+            var previousValue = previousData ? previousData.Volume : 0;
+            var currentValue = lastData.Volume;
+            var growthPercentage = ((currentValue - previousValue) / previousValue) * 100;
+            var arrowSymbol = '';
+
+            if (growthPercentage > 0) {
+                arrowSymbol = '&#x25B2;'; // Upward green arrow symbol
+                
+            } else if (growthPercentage < 0) {
+                arrowSymbol = '&#x25BC;'; // Downward red arrow symbol
+            }
+
+            return countryData.map(function(d) {
+                return d.Date + ' ' + d.Volume;
+            });
+        }
+
+        // Helper function to generate the annotations array
+      // Helper function to generate the annotations array
+// Helper function to generate the annotations array
+function getAnnotations(countryData) {
+    var annotations = [];
+    var lastData = countryData[countryData.length - 1];
+    var previousData = countryData[countryData.length - 2];
+    var previousValue = previousData ? previousData.Volume : 0;
+    var currentValue = lastData.Volume;
+    var growthPercentage = ((currentValue - previousValue) / previousValue) * 100;
+    var arrowSymbol = '';
+    var colorClass = '';
+
+    if (growthPercentage > 0) {
+        arrowSymbol = '&#x25B2;'; // Upward green arrow symbol
+        colorClass = 'green';
+    } else if (growthPercentage < 0) {
+        arrowSymbol = '&#x25BC;'; // Downward red arrow symbol
+        colorClass = 'red';
+    }
+
+    if (arrowSymbol) {
+        var text = growthPercentage.toFixed(2) + '%';
+        var arrowElement = '<span class="arrow ' + colorClass + '">' + arrowSymbol + '</span>';
+        var percentageElement = '<span class="percentage ' + colorClass + '">' + text + '</span>';
+
+        var annotation = {
+            xref: 'paper',
+            yref: 'paper',
+            x: 1,
+            xanchor: 'right',
+            y: 1,
+            yanchor: 'top',
+            text: arrowElement + ' ' + percentageElement,
+            showarrow: false,
+            font: {
+                size: 14,
+                color: colorClass === 'green' ? 'green' : 'red'
+            }
+        };
+
+        annotations.push(annotation);
+    }
+
+    return annotations;
+}
+
+
     </script>
 </body>
 </html>
