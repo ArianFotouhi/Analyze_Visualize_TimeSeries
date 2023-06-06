@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='Scholar.css')}}">
+
+<script src="https://kit.fontawesome.com/7b39c73889.js" crossorigin="anonymous"></script>
+<link rel="icon" href="{{url_for('static', filename='favicon2.ico')}}">
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+<head>
+
+  <meta charset="utf-8">
+  <title>NI2Lab</title>
+
+</head>
+
+<body>
+
+
+    <section id="sec1">
+
+
+
+      <form method="POST">
+        <input name="username" class="text_box" placeholder="Username">
+        <input type = "password"  name="password" class="text_box"  placeholder="Password">
+        <input type="submit" class="btn btn-dark" value="Login">
+      </form>
+
+{% if message%}
+<p>{{message}}</p>
+{% endif %}
+
+
+
+    </section>
+
+
+    <section id="sec-copyright">
+  <i class="fab fa-twitter"></i>
+  <i class="fab fa-facebook-square"></i>
+  <i class="fab fa-instagram-square"></i>
+      <hr>
+      <i class="far fa-copyright"> NI<sup>2</sup>Lab</i>
+    </section>
+
+</body>
+
+</html>

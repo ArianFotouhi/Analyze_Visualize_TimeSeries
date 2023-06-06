@@ -10,8 +10,29 @@ users = {
     "user2":"pass2"
 }
 
+#Authentication
 def authenticate(username, password):
     if username in users and users[username] == password:
         return True
     return False
 
+
+#Routes
+
+#Home
+@app.route("/")
+def home():
+    return render_template("login.html")
+
+#Login
+@app.route("/login", methods=["GET,POST"])
+def login():
+    username = request.form["username"]
+    password = request.form["password"]
+
+    if authenticate(username, password):
+        session["username"] = username
+        return redirect(url_for("visual"))
+    else:
+        return render_template("login.html", error="Invalid username or password")
+    

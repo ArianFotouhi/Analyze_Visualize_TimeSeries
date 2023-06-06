@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='Scholar.css')}}">
+
+<script src="https://kit.fontawesome.com/7b39c73889.js" crossorigin="anonymous"></script>
+<link rel="icon" href="{{url_for('static', filename='favicon2.ico')}}">
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+<head>
+
+  <meta charset="utf-8">
+  <title>NI2Lab</title>
+
+</head>
+
+<body>
+
+
+  <section id="sec1">
+
+    {%if message%}
+    <p>{{message}}</p>
+    {% endif %}
+
+
+
+    <form method="POST">
+      <input name="trans_id" class="text_box" placeholder="Transaction ID">
+      <input type="password" class="text_box" name="data_password" placeholder="Data access password">
+      <input type="password" class="text_box" name="password" placeholder="Password">
+      <input type="submit" class="btn btn-dark" value="Submit">
+    </form>
+
+
+
+
+
+    {%if data_keys%}
+<section style="margin-top: 5%;">
+
+
+
+
+
+    <table class="table table-striped table-hover table-dark" style=" margin: 0%;" style="padding: 5%;">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+
+        {%for i in data_keys%}
+          <th scope="col">{{i}}</th>
+        {%endfor%}
+      </tr>
+    </thead>
+
+    <tbody>
+    {%for i in range(len_people)%}
+
+     <tr>
+        <th scope="row">{{i+1}}</th>
+
+  	{%for t in range(len_cols)%}
+
+  	<td>{{data_values[t][i]}}</td>
+
+    {%endfor%}
+      </tr>
+        {%endfor%}
+    </tbody>
+  </table>
+
+
+
+
+
+
+  </section>
+
+    {% endif %}
+
+
+    <a style="margin-top: 5%;" href="{{url_for('home',token=token)}}" class="btn btn-dark">Back to Home</a>
+
+
+  </section>
+
+
+  <section id="sec-copyright">
+    <i class="fab fa-twitter"></i>
+    <i class="fab fa-facebook-square"></i>
+    <i class="fab fa-instagram-square"></i>
+    <hr>
+    <i class="far fa-copyright"> NI<sup>2</sup>Lab</i>
+  </section>
+
+</body>
+
+</html>
