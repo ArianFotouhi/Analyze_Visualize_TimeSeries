@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session
-import matplotlib.pyplot as plt
-import pandas as pd
+# import matplotlib.pyplot as plt
+# import pandas as pd
 
 app = Flask(__name__)
 app.secret_key = "!241$gc"
@@ -9,6 +9,8 @@ users = {
     "user1":"pass1",
     "user2":"pass2"
 }
+
+
 
 #Authentication
 def authenticate(username, password):
@@ -20,43 +22,55 @@ def authenticate(username, password):
 #Routes
 
 #Home
-@app.route("/")
-def home():
-    return render_template("login.html")
+@app.route('/', methods=['GET'])
+def index():
+    if 'username' in session:
+        return redirect('/visual')
+    return redirect('/login')
 
-#Login
-@app.route("/login", methods=["GET,POST"])
+
+
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    username = request.form["username"]
-    password = request.form["password"]
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        
+        if authenticate(username, password):
+            session["username"] = username      
+            return redirect('/visual')
+        else:
+            return render_template("login.html", error="Invalid username or password")
+    return render_template("login.html")
+    
+  
 
-    if authenticate(username, password):
-        session["username"] = username
-        return redirect(url_for("visual"))
-    else:
-        return render_template("login.html", error="Invalid username or password")
     
 #Visualization
-app.route("/visual")
+@app.route('/visual', methods=['GET','POST'])
 def visual():
-    if "username" not in session:
-        return redirect(url_for("home"))
-    
-    df = pd.read_csv("datafile.csv")
-    
-    #do the analysis here
-    # ...
+    if 'username' not in session:
 
-    plt.plot(df["timestamp"], df["value"])
-    plt.xlabel("Timestamp")
-    plt.ylabel("Value")
-    plt.title("Time Series Data")
-    plt.savefig("static/plot.png")
+        return redirect('/login')
 
-    return render_template("visual.html")
-
-
+    time_series_data = [
+        {'date': '2022-01-01', 'value': 10},
+        {'date': '2022-01-02', 'value': 15},
+        {'date': '2022-01-03', 'value': 12},
+        {'date': '2022-01-04', 'value': 14},
+        {'date': '2022-01-05', 'value': 25},
+        {'date': '2022-01-06', 'value': 8},
+        ]
+            
+    # Pass the time series data to the template
+    return render_template('visual.html', data=time_series_data)
 
 
-if __name__ == "__main__":
+
+@app.route('/logout', methods=['GET'])
+def logout():
+    session.pop('username', None)
+    return redirect('/login')
+
+if __name__ == '__main__':
     app.run(debug=True)
