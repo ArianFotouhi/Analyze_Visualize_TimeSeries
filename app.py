@@ -36,3 +36,27 @@ def login():
     else:
         return render_template("login.html", error="Invalid username or password")
     
+#Visualization
+app.route("/visual")
+def visual():
+    if "username" not in session:
+        return redirect(url_for("home"))
+    
+    df = pd.read_csv("datafile.csv")
+    
+    #do the analysis here
+    # ...
+
+    plt.plot(df["timestamp"], df["value"])
+    plt.xlabel("Timestamp")
+    plt.ylabel("Value")
+    plt.title("Time Series Data")
+    plt.savefig("static/plot.png")
+
+    return render_template("timeseries.html")
+
+
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
