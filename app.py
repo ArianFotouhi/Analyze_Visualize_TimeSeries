@@ -53,7 +53,7 @@ def visual():
     plt.title("Time Series Data")
     plt.savefig("static/plot.png")
 
-    return render_template("timeseries.html")
+    return render_template("visual.html")
 
 
 

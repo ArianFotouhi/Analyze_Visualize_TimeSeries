@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Time Series Analysis</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">Time Series Analysis</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/logout">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    
+    <div class="container mt-5">
+        <h2>Time Series Analysis</h2>
+        <div id="chart"></div>
+    </div>
+
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script>
+        // Assume 'data' variable contains the time series data to be plotted
+
+        // Prepare the x and y values for the plot
+        var x = data.map(function(d) { return d.date; });
+        var y = data.map(function(d) { return d.value; });
+
+        // Create the plot using Plotly.js
+        var trace = {
+            x: x,
+            y: y,
+            type: 'scatter',
+            mode: 'lines',
+            name: 'Time Series'
+        };
+        var layout = {
+            title: 'Time Series Plot',
+            xaxis: {
+                title: 'Date'
+            },
+            yaxis: {
+                title: 'Value'
+            }
+        };
+        Plotly.newPlot('chart', [trace], layout);
+    </script>
+</body>
+</html>
