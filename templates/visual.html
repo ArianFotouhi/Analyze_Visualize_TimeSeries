@@ -14,17 +14,27 @@
     <script>
         // Assume 'data' variable contains the time series data to be plotted
         var data = JSON.parse('{{ data | tojson }}');
+
         var x = data.map(function(d) { return d.Date; });
         var y = data.map(function(d) { return d.Volume; });
         
-        // Create the plot using Plotly.js
-        var trace = {
-            x: x,
-            y: y,
-            type: 'scatter',
-            mode: 'lines',
-            name: 'Time Series'
-        };
+        var f1 = data.map(function(d) { return d.Country; });
+        var f2 = data.map(function(d) { return d.Low; });
+
+        
+            
+            // Create the plot using Plotly.js
+            var trace = {
+                x: x,
+                y: y,
+                text: f1.map(function(value, index) {
+                    return 'Country: ' + value + '<br>' + 'Low: ' + f2[index];
+                }),
+                hovertemplate: '%{text}',
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Time Series'
+            };
         var layout = {
             title: 'Time Series Plot',
             xaxis: {
