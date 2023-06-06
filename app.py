@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 # import matplotlib.pyplot as plt
-# import pandas as pd
+import pandas as pd
+import json
 
 app = Flask(__name__)
 app.secret_key = "!241$gc"
@@ -19,15 +20,30 @@ def authenticate(username, password):
     return False
 
 def data_render():
-    time_series_data = [
-        {'date': '2022-01-01', 'value': 3},
-        {'date': '2022-01-02', 'value': 15},
-        {'date': '2022-01-03', 'value': 12},
-        {'date': '2022-01-04', 'value': 14},
-        {'date': '2022-01-05', 'value': 25},
-        {'date': '2022-01-06', 'value': 8},
-        ]
-    return time_series_data
+    # time_series_data = [
+    #     {'Date': '2022-01-01', 'Volume': 3},
+    #     {'Date': '2022-01-02', 'Volume': 15},
+    #     {'Date': '2022-01-03', 'Volume': 12},
+    #     {'Date': '2022-01-04', 'Volume': 14},
+    #     {'Date': '2022-01-05', 'Volume': 25},
+    #     {'Date': '2022-01-06', 'Volume': 8},
+    #     ]
+    
+    
+        
+    
+    df = pd.read_csv("data/AAL.csv")
+    print(df.head())
+    data_dict = df.to_dict(orient='records')
+    
+    print(data_dict)
+
+
+    # data = json.dumps(data_dict)
+
+    
+    
+    return data_dict
 
 #Routes
 
