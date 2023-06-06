@@ -5,7 +5,7 @@
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
-    <h1>IEG Visualizer</h1>
+    <h1>Time Series Analysis</h1>
     
     <!-- Add filter controls here if needed -->
     
@@ -14,8 +14,8 @@
     <script>
         // Assume 'data' variable contains the time series data to be plotted
         var data = JSON.parse('{{ data | tojson }}');
-        var x = data.map(function(d) { return d.date; });
-        var y = data.map(function(d) { return d.value; });
+        var x = data.map(function(d) { return d.Date; });
+        var y = data.map(function(d) { return d.Volume; });
         
         // Create the plot using Plotly.js
         var trace = {
@@ -26,12 +26,12 @@
             name: 'Time Series'
         };
         var layout = {
-            title: 'Traffic',
+            title: 'Time Series Plot',
             xaxis: {
-                title: 'Date and Time'
+                title: 'Date'
             },
             yaxis: {
-                title: 'Number of Travelers'
+                title: 'Rate'
             }
         };
         Plotly.newPlot('chart', [trace], layout);
