@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 # import matplotlib.pyplot as plt
 import pandas as pd
 import json
@@ -12,6 +12,8 @@ users = {
 }
 
 
+# df = pd.read_csv("data/AAL.csv")
+
 
 #Authentication
 def authenticate(username, password):
@@ -19,7 +21,7 @@ def authenticate(username, password):
         return True
     return False
 
-def data_render():
+def data_render(to_dict=True):
     # time_series_data = [
     #     {'Date': '2022-01-01', 'Volume': 3},
     #     {'Date': '2022-01-02', 'Volume': 15},
@@ -30,20 +32,14 @@ def data_render():
     #     ]
     
     
-        
-    
     df = pd.read_csv("data/AAL.csv")
-    print(df.head())
-    data_dict = df.to_dict(orient='records')
+    categories = df['Country'].unique().tolist()
     
-    print(data_dict)
-
-
-    # data = json.dumps(data_dict)
-
+    if to_dict:
+        print(df.head())
+        df = df.to_dict(orient='records')
     
-    
-    return data_dict
+    return df,categories
 
 #Routes
 
@@ -79,12 +75,36 @@ def visual():
 
         return redirect('/login')
 
-    data = data_render()
+    data, categories = data_render(to_dict=True)
 
             
     # Pass the time series data to the template
-    return render_template('visual.html', data=data)
+    
+    return render_template('visual.html', data=data, countries=categories)
 
+# Update plot based on country filter
+
+@app.route('/update_plot', methods=['POST'])
+def update_plot():
+    df, _ = data_render(to_dict=False)
+    selected_country = request.form['country']
+    
+    if selected_country:
+        filtered_df = df[df['Country'] == selected_country]
+    else:
+        filtered_df = df
+    
+    trace = {
+        'x': filtered_df['Date'].tolist(),
+        'y': filtered_df['Volume'].tolist(),
+        'text': filtered_df.apply(lambda row: f"Country: {row['Country']}<br>Low: {row['Low']}", axis=1).tolist(),
+        'hovertemplate': '%{text}',
+        'type': 'scatter',
+        'mode': 'lines',
+        'name': 'Time Series'
+    }
+    
+    return jsonify(trace)
 
 
 @app.route('/logout', methods=['GET'])
