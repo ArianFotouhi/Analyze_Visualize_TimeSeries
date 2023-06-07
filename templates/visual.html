@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Time Series Analysis</title>
+    <title>IEG Visualizer</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-
     <style>
         .plot {
             width: 400px; /* Adjust the width of the plot */
@@ -13,170 +13,90 @@
             position: relative; /* Add position relative */
         }
 
-        .percentage {
-            position: absolute; /* Add position absolute */
-            top: 10px; /* Adjust the top position of the percentage text */
-            right: 10px; /* Adjust the right position of the percentage text */
-            font-size: 16px; /* Adjust the font size of the percentage text */
-            font-weight: bold; /* Add font weight to the percentage text */
-            color: green; /* Set initial color as green */
-        }
-
         .arrow {
-            position: absolute; /* Add position absolute */
-            top: 14px; /* Adjust the top position of the arrow */
-            right: 60px; /* Adjust the right position of the arrow */
-            font-size: 18px; /* Adjust the font size of the arrow */
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            font-size: 14px;
+            text-align: center;
+            font-weight: bold;
         }
 
-        .arrow.red {
-            color: red; /* Set color as red for negative growth */
+        .arrow .up-arrow {
+            color: green;
+        }
+
+        .arrow .down-arrow {
+            color: red;
         }
     </style>
 </head>
 <body>
-    <h1>Time Series Analysis</h1>
-    
-    <a href="{{url_for('logout')}}" class="btn btn-danger">Logout</a>
+    <h1>IEG Visualizer <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a> </h1>
 
-    <!-- Add filter controls here if needed -->
-    <label for="country-filter">Country:</label>
-    <select id="country-filter" name="country-filter">
-        <option value="">All</option>
-        {% for country in countries %}
-            <option value="{{ country }}">{{ country }}</option>
-        {% endfor %}
-    </select>
-    
-    <div id="chart-container">
-        {% for country in countries %}
-            <div id="{{ country }}" class="plot"></div>
-        {% endfor %}
-    </div>
-    
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        var data = JSON.parse('{{ data | tojson }}');
-        var countries = {{ countries | tojson }};
+    <form id="client-form" action="/visual" method="get">
+        <label for="client">Select Client:</label>
+        <select id="client" name="client">
+            <option value="">All</option>
+            {% for client in clients %}
+                <option value="{{ client }}" {% if client == selected_client %}selected{% endif %}>{{ client }}</option>
+            {% endfor %}
+        </select>
+    </form>
 
-        // Create a plot for each country
-        countries.forEach(function(country) {
-            var countryData = data.filter(function(d) {
-                return d.Country === country;
-            });
+    <div id="charts-container"></div>
 
-            var x = countryData.map(function(d) { return d.Date; });
-            var y = countryData.map(function(d) { return d.Volume; });
-            var f1 = countryData.map(function(d) { return d.Country; });
-            var f2 = countryData.map(function(d) { return d.Low; });
-
-            var trace = {
-                x: x,
-                y: y,
-                text: getPlotText(countryData), // Call a helper function to generate the text array
-                hovertemplate: '%{text}', // Set the hover template to display the text array
-                type: 'scatter',
-                mode: 'lines',
-                name: 'Time Series'
-            };
-            var layout = {
-                title: 'Time Series Plot - ' + country,
-                xaxis: {
-                    title: 'Date'
-                },
-                yaxis: {
-                    title: 'Rate'
-                },
-                // Apply the tickformat to the x-axis
-                xaxis_tickformat: '%Y-%m', // Display month and year
-                annotations: getAnnotations(countryData), // Call a helper function to generate the annotations
-            };
-
-            Plotly.newPlot(country, [trace], layout);
-        });
-
+    <script type="text/javascript">
         $(document).ready(function() {
-            $('#country-filter').on('change', function() {
-                var selectedCountry = $(this).val();
-                if (selectedCountry) {
-                    $('.plot').hide();
-                    $('#' + selectedCountry).show();
-                } else {
-                    $('.plot').show();
-                }
+            function updatePlot() {
+                var selectedClient = $('#client').val();
+                $.ajax({
+                    url: '/update_plot',
+                    type: 'POST',
+                    data: {client: selectedClient},
+                    success: function(response) {
+                        var traces = response;
+                        var layout = {
+                            title: 'Volume vs. Date',
+                            xaxis: {title: 'Date'},
+                            yaxis: {title: 'Volume'}
+                        };
+                        var chartsContainer = $('#charts-container');
+                        chartsContainer.empty();
+                        for (var i = 0; i < traces.length; i++) {
+                            var chartId = 'chart-' + i;
+                            var chartDiv = $('<div>').attr('id', chartId).addClass('plot'); // Add 'plot' class
+                            chartsContainer.append(chartDiv);
+                            var data = [traces[i]];
+                            Plotly.newPlot(chartId, data, layout);
+
+                            // Add arrow and growth percentage
+                            var lastRecord = data[0].y[data[0].y.length - 1];
+                            var prevRecord = data[0].y[data[0].y.length - 2];
+                            var growthPercentage = ((lastRecord - prevRecord) / prevRecord) * 100;
+
+                            var arrowDiv = $('<div>').addClass('arrow');
+                            var arrowIcon = '';
+                            if (growthPercentage > 0) {
+                                arrowIcon = $('<i>').addClass('up-arrow').text('▲');
+                            } else if (growthPercentage < 0) {
+                                arrowIcon = $('<i>').addClass('down-arrow').text('▼');
+                            }
+                            arrowDiv.append(arrowIcon);
+                            arrowDiv.append('<br>');
+                            arrowDiv.append(growthPercentage.toFixed(2) + '%');
+                            chartDiv.append(arrowDiv);
+                        }
+                    }
+                });
+            }
+
+            updatePlot();
+
+            $('#client').on('change', function() {
+                updatePlot();
             });
         });
-
-        // Helper function to generate the text array with percentage and arrow symbols
-        function getPlotText(countryData) {
-            var lastData = countryData[countryData.length - 1];
-            var previousData = countryData[countryData.length - 2];
-            var previousValue = previousData ? previousData.Volume : 0;
-            var currentValue = lastData.Volume;
-            var growthPercentage = ((currentValue - previousValue) / previousValue) * 100;
-            var arrowSymbol = '';
-
-            if (growthPercentage > 0) {
-                arrowSymbol = '&#x25B2;'; // Upward green arrow symbol
-                
-            } else if (growthPercentage < 0) {
-                arrowSymbol = '&#x25BC;'; // Downward red arrow symbol
-            }
-
-            return countryData.map(function(d) {
-                return 'Vol:' + d.Volume +' CL: '+ d.ClientID;
-            });
-        }
-
-        // Helper function to generate the annotations array
-      // Helper function to generate the annotations array
-// Helper function to generate the annotations array
-function getAnnotations(countryData) {
-    var annotations = [];
-    var lastData = countryData[countryData.length - 1];
-    var previousData = countryData[countryData.length - 2];
-    var previousValue = previousData ? previousData.Volume : 0;
-    var currentValue = lastData.Volume;
-    var growthPercentage = ((currentValue - previousValue) / previousValue) * 100;
-    var arrowSymbol = '';
-    var colorClass = '';
-
-    if (growthPercentage > 0) {
-        arrowSymbol = '&#x25B2;'; // Upward green arrow symbol
-        colorClass = 'green';
-    } else if (growthPercentage < 0) {
-        arrowSymbol = '&#x25BC;'; // Downward red arrow symbol
-        colorClass = 'red';
-    }
-
-    if (arrowSymbol) {
-        var text = growthPercentage.toFixed(2) + '%';
-        var arrowElement = '<span class="arrow ' + colorClass + '">' + arrowSymbol + '</span>';
-        var percentageElement = '<span class="percentage ' + colorClass + '">' + text + '</span>';
-
-        var annotation = {
-            xref: 'paper',
-            yref: 'paper',
-            x: 1,
-            xanchor: 'right',
-            y: 1,
-            yanchor: 'top',
-            text: arrowElement + ' ' + percentageElement,
-            showarrow: false,
-            font: {
-                size: 16,
-                color: colorClass === 'green' ? 'green' : 'red'
-            }
-        };
-
-        annotations.push(annotation);
-    }
-
-    return annotations;
-}
-
-
     </script>
 </body>
 </html>
-
