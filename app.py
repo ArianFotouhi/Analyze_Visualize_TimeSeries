@@ -5,9 +5,18 @@ app = Flask(__name__)
 app.secret_key = "!241$gc"
 
 users = {
-    "user1": {"password": "pass1", "data_range": ("2006-01-01", "2010-12-31")},
-    "user2": {"password": "pass2", "data_range": ("2010-01-01", "2015-12-31")},
-    "user3": {"password": "pass3", "data_range": ("2015-01-01", "2022-12-31")}
+    "user0": {"password": "pass", "ClientID": 'admin'},
+
+    "user1": {"password": "pass", "ClientID": 1},
+    "user2": {"password": "pass", "ClientID": 2},
+    "user3": {"password": "pass", "ClientID": 3},
+    "user4": {"password": "pass", "ClientID": 4},
+    "user5": {"password": "pass", "ClientID": 5},
+    "user6": {"password": "pass", "ClientID": 6},
+    "user7": {"password": "pass", "ClientID": 7},
+    "user8": {"password": "pass", "ClientID": 8},
+    "user9": {"password": "pass", "ClientID": 9},
+    "user10": {"password": "pass", "ClientID": 10},
 }
 
 def authenticate(username, password):
@@ -22,10 +31,12 @@ def load_data():
 
 def filter_data(username, df, selected_country):
     if selected_country:
+        #filtering of country on upper left of screen
         filtered_df = df[df['Country'] == selected_country]
+    elif users[username]["ClientID"] == 'admin':
+        return df
     else:
-        data_range = users[username]["data_range"]
-        filtered_df = df[(df['Date'] >= data_range[0]) & (df['Date'] <= data_range[1])]
+        filtered_df = df[df['ClientID'] == users[username]["ClientID"]]
     return filtered_df
 
 @app.route('/', methods=['GET'])
