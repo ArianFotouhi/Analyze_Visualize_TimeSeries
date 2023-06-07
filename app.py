@@ -51,7 +51,7 @@ def filter_data(username, df, selected_client, access_clients):
 def LoungeCounter(client_id):
     df = load_data()
     unique_count = df.loc[df['ClientID'] == client_id, 'Lounge_ID'].nunique()
-    return unique_count
+    return {client_id:unique_count}
 
 @app.route('/', methods=['GET'])
 def index():
@@ -86,9 +86,9 @@ def visual():
     
     
     data = filtered_df.to_dict(orient='records')
+
+    # lounge_counter_dict = [LoungeCounter(int(j)) for j in access_clients]
     
-    
-    # clients = df['ClientID'].unique().tolist() if 'admin' in access_clients else access_clients
 
     return render_template('visual.html', data=data, clients=access_clients)
 
@@ -98,8 +98,8 @@ def update_plot():
     df = load_data()
     
     if selected_client:
-        filtered_df = filter_data(session["username"], df, selected_client,selected_client)
-       
+        filtered_df = filter_data(session["username"], df, selected_client, selected_client)
+
         trace = {
             'x': filtered_df['Date'].tolist(),
             'y': filtered_df['Volume'].tolist(),
@@ -109,19 +109,24 @@ def update_plot():
             'mode': 'lines',
             'name': 'Time Series'
         }
-        
-        return jsonify([trace])
+
+        layout = {
+            'title': f'Client ID {selected_client}',
+            'xaxis': {'title': 'Date'},
+            'yaxis': {'title': 'Rate'}
+        }
+
+        return jsonify({'traces': [trace], 'layouts': [layout]})
     else:
         traces = []
-        
+        layouts = []
+
         username = session["username"]
         access_clients = users[username]["AccessCL"]
 
-
         for client in access_clients:
-            
-            client_df = filter_data(session["username"], df, client,access_clients)
-            
+            client_df = filter_data(session["username"], df, client, access_clients)
+
             trace = {
                 'x': client_df['Date'].tolist(),
                 'y': client_df['Volume'].tolist(),
@@ -129,11 +134,20 @@ def update_plot():
                 'hovertemplate': '%{text}',
                 'type': 'scatter',
                 'mode': 'lines',
-                'name': f'Time Series - ClientID {client}'
+                'name': f'Time Series'
             }
             traces.append(trace)
-            
-        return jsonify(traces)
+
+            layout = {
+                'title': f'Client ID {client}',
+                'xaxis': {'title': 'Date'},
+                'yaxis': {'title': 'Rate'}
+            }
+            layouts.append(layout)
+
+        return jsonify({'traces': traces, 'layouts': layouts})
+
+
 
 
 @app.route('/logout', methods=['GET'])
