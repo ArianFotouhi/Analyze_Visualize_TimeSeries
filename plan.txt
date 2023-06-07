@@ -1,0 +1,5 @@
+Variable converstion between two datasets:
+PAX counter -> Volume
+
+points:
+1. definition of dormant lounge can be if recently there was no new record out of that AND no one is reported to be there (if exit of PAX is submitted)
