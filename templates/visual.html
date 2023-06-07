@@ -7,8 +7,8 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         .plot {
-            width: 400px; /* Adjust the width of the plot */
-            height: 300px; /* Adjust the height of the plot */
+            width: 380px; /* Adjust the width of the plot */
+            height: 350px; /* Adjust the height of the plot */
             display: inline-block; /* Display plots in a row */
             position: relative; /* Add position relative */
         }
@@ -32,7 +32,7 @@
     </style>
 </head>
 <body>
-    <h1>IEG Visualizer <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a> </h1>
+    <h5>IEG Visualizer <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a> </h5>
 
     <form id="client-form" action="/visual" method="get">
         <label for="client">Select Client:</label>
@@ -42,7 +42,7 @@
                 <option value="{{ client }}" {% if client == selected_client %}selected{% endif %}>{{ client }}</option>
             {% endfor %}
         </select>
-        <button id="update-btn" type="button" class="btn btn-primary">Update</button>
+        <button id="update-btn" type="button" class="btn btn-danger" >Update</button>
     </form>
     
 
@@ -57,12 +57,8 @@ $(document).ready(function() {
             type: 'POST',
             data: { client: selectedClient },
             success: function(response) {
-                var traces = response;
-                var layout = {
-                    title: 'Volume vs. Date',
-                    xaxis: { title: 'Date' },
-                    yaxis: { title: 'Volume' }
-                };
+                var traces = response.traces;
+                var layouts = response.layouts;
                 var chartsContainer = $('#charts-container');
                 chartsContainer.empty();
                 for (var i = 0; i < traces.length; i++) {
@@ -70,6 +66,7 @@ $(document).ready(function() {
                     var chartDiv = $('<div>').attr('id', chartId).addClass('plot');
                     chartsContainer.append(chartDiv);
                     var data = [traces[i]];
+                    var layout = layouts[i];
                     Plotly.newPlot(chartId, data, layout);
 
                     // Add arrow and growth percentage
@@ -97,7 +94,7 @@ $(document).ready(function() {
         updatePlot();
     }
 
-    // Update results every 10 seconds
+    // Update results every 20 seconds
     setInterval(updateResults, 20000);
 
     // Manual update button
