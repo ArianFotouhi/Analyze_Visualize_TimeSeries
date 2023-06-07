@@ -6,4 +6,8 @@ points:
 
 Things specifically for new dataset (undone yet):
 1. Calculate the current number of Passengers and show that
-2. 
+2. there are classes there
+
+Make the code modular where:
+1. a database connector is seperated
+2. javascript, html, css codes are seperated
