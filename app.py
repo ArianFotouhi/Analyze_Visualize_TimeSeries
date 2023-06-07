@@ -5,7 +5,7 @@ app = Flask(__name__)
 app.secret_key = "!241$gc"
 
 users = {
-    "user0": {"password": "pass", "ClientID": 'admin'},
+    "admin": {"password": "pass", "ClientID": 'admin'},
 
     "user1": {"password": "pass", "ClientID": 1},
     "user2": {"password": "pass", "ClientID": 2},
@@ -26,7 +26,7 @@ def authenticate(username, password):
 
 def load_data():
     df = pd.read_csv("data/AAL.csv")
-    df['Date'] = pd.to_datetime(df['Date'])
+    # df['Date'] = pd.to_datetime(df['Date'])
     return df
 
 def filter_data(username, df, selected_country):
