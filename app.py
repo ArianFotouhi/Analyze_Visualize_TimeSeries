@@ -5,18 +5,18 @@ app = Flask(__name__)
 app.secret_key = "!241$gc"
 
 users = {
-    "admin": {"password": "pass", "ClientID": 'admin'},
+    "admin": {"password": "admin", "ClientID": 'admin', 'AccessCL':['1','2','3','4','5','6','7','8','9','10']},
 
-    "user1": {"password": "pass", "ClientID": 1},
-    "user2": {"password": "pass", "ClientID": 2},
-    "user3": {"password": "pass", "ClientID": 3},
-    "user4": {"password": "pass", "ClientID": 4},
-    "user5": {"password": "pass", "ClientID": 5},
-    "user6": {"password": "pass", "ClientID": 6},
-    "user7": {"password": "pass", "ClientID": 7},
-    "user8": {"password": "pass", "ClientID": 8},
-    "user9": {"password": "pass", "ClientID": 9},
-    "user10": {"password": "pass", "ClientID": 10},
+    "user1": {"password": "pass", "ClientID": 1 , 'AccessCL':['1','2','3']},
+    "user2": {"password": "pass", "ClientID": 2, 'AccessCL':['2']},
+    "user3": {"password": "pass", "ClientID": 3, 'AccessCL':['3']},
+    "user4": {"password": "pass", "ClientID": 4, 'AccessCL':['4']},
+    "user5": {"password": "pass", "ClientID": 5 , 'AccessCL':['5']},
+    "user6": {"password": "pass", "ClientID": 6 , 'AccessCL':['6']},
+    "user7": {"password": "pass", "ClientID": 7 , 'AccessCL':['7']},
+    "user8": {"password": "pass", "ClientID": 8 , 'AccessCL':['8']},
+    "user9": {"password": "pass", "ClientID": 9 , 'AccessCL':['9']},
+    "user10": {"password": "pass", "ClientID": 10 , 'AccessCL':['10']},
 }
 
 def authenticate(username, password):
@@ -29,14 +29,25 @@ def load_data():
     # df['Date'] = pd.to_datetime(df['Date'])
     return df
 
-def filter_data(username, df, selected_country):
-    if selected_country:
-        #filtering of country on upper left of screen
-        filtered_df = df[df['Country'] == selected_country]
+def filter_data(username, df, selected_client, access_clients):
+    if selected_client:
+       
+       
+
+        if selected_client in access_clients:
+            
+        # filtering of client on upper left of screen
+            filtered_df = df[df['ClientID'] == int(selected_client)]
+        else:
+            filtered_df = None
+
     elif users[username]["ClientID"] == 'admin':
+        
         return df
     else:
+       
         filtered_df = df[df['ClientID'] == users[username]["ClientID"]]
+       
     return filtered_df
 
 @app.route('/', methods=['GET'])
@@ -62,32 +73,65 @@ def visual():
     if 'username' not in session:
         return redirect('/login')
 
-    selected_country = request.args.get('country', '')
+    selected_client = request.args.get('client', '')
+
+    username = session["username"]
+    access_clients = users[username]["AccessCL"]
+
     df = load_data()
-    filtered_df = filter_data(session["username"], df, selected_country)
+    filtered_df = filter_data(session["username"], df, selected_client, access_clients)
+    
     
     data = filtered_df.to_dict(orient='records')
-    categories = df['Country'].unique().tolist()
+    
+    
+    # clients = df['ClientID'].unique().tolist() if 'admin' in access_clients else access_clients
 
-    return render_template('visual.html', data=data, countries=categories)
+    return render_template('visual.html', data=data, clients=access_clients)
 
 @app.route('/update_plot', methods=['POST'])
 def update_plot():
-    selected_country = request.form['country']
+    selected_client = request.form['client']
     df = load_data()
-    filtered_df = filter_data(session["username"], df, selected_country)
     
-    trace = {
-        'x': filtered_df['Date'].tolist(),
-        'y': filtered_df['Volume'].tolist(),
-        'text': filtered_df.apply(lambda row: f"Country: {row['Country']}<br>Low: {row['Low']}", axis=1).tolist(),
-        'hovertemplate': '%{text}',
-        'type': 'scatter',
-        'mode': 'lines',
-        'name': 'Time Series'
-    }
-    
-    return jsonify(trace)
+    if selected_client:
+        filtered_df = filter_data(session["username"], df, selected_client,selected_client)
+       
+        trace = {
+            'x': filtered_df['Date'].tolist(),
+            'y': filtered_df['Volume'].tolist(),
+            'text': filtered_df.apply(lambda row: f"ClientID: {row['ClientID']}<br>Low: {row['Low']}", axis=1).tolist(),
+            'hovertemplate': '%{text}',
+            'type': 'scatter',
+            'mode': 'lines',
+            'name': 'Time Series'
+        }
+        
+        return jsonify([trace])
+    else:
+        traces = []
+        
+        username = session["username"]
+        access_clients = users[username]["AccessCL"]
+
+
+        for client in access_clients:
+            
+            client_df = filter_data(session["username"], df, client,access_clients)
+            
+            trace = {
+                'x': client_df['Date'].tolist(),
+                'y': client_df['Volume'].tolist(),
+                'text': client_df.apply(lambda row: f"ClientID: {row['ClientID']}<br>Low: {row['Low']}", axis=1).tolist(),
+                'hovertemplate': '%{text}',
+                'type': 'scatter',
+                'mode': 'lines',
+                'name': f'Time Series - ClientID {client}'
+            }
+            traces.append(trace)
+            
+        return jsonify(traces)
+
 
 @app.route('/logout', methods=['GET'])
 def logout():
