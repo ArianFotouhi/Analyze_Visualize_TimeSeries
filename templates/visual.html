@@ -3,6 +3,8 @@
 <head>
     <title>Time Series Analysis</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
     <style>
         .plot {
             width: 400px; /* Adjust the width of the plot */
@@ -35,6 +37,8 @@
 <body>
     <h1>Time Series Analysis</h1>
     
+    <a href="{{url_for('logout')}}" class="btn btn-danger">Logout</a>
+
     <!-- Add filter controls here if needed -->
     <label for="country-filter">Country:</label>
     <select id="country-filter" name="country-filter">
@@ -120,7 +124,7 @@
             }
 
             return countryData.map(function(d) {
-                return d.Date + ' ' + d.Volume;
+                return 'Vol:' + d.Volume +' CL: '+ d.ClientID;
             });
         }
 
@@ -160,7 +164,7 @@ function getAnnotations(countryData) {
             text: arrowElement + ' ' + percentageElement,
             showarrow: false,
             font: {
-                size: 14,
+                size: 16,
                 color: colorClass === 'green' ? 'green' : 'red'
             }
         };
@@ -175,3 +179,4 @@ function getAnnotations(countryData) {
     </script>
 </body>
 </html>
+
