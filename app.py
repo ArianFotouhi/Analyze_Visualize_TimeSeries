@@ -51,7 +51,7 @@ def filter_data(username, df, selected_client, access_clients):
 def LoungeCounter(client_id):
     df = load_data()
     unique_count = df.loc[df['ClientID'] == client_id, 'Lounge_ID'].nunique()
-    return {client_id:unique_count}
+    return unique_count
 
 @app.route('/', methods=['GET'])
 def index():
@@ -99,6 +99,7 @@ def update_plot():
     
     if selected_client:
         filtered_df = filter_data(session["username"], df, selected_client, selected_client)
+        lounge_num= LoungeCounter(int(selected_client))
 
         trace = {
             'x': filtered_df['Date'].tolist(),
@@ -111,7 +112,7 @@ def update_plot():
         }
 
         layout = {
-            'title': f'Client ID {selected_client}',
+            'title': f'CL ID {selected_client} Lounge num {lounge_num}',
             'xaxis': {'title': 'Date'},
             'yaxis': {'title': 'Rate'}
         }
@@ -126,7 +127,7 @@ def update_plot():
 
         for client in access_clients:
             client_df = filter_data(session["username"], df, client, access_clients)
-
+            lounge_num= LoungeCounter(int(client))
             trace = {
                 'x': client_df['Date'].tolist(),
                 'y': client_df['Volume'].tolist(),
@@ -139,7 +140,7 @@ def update_plot():
             traces.append(trace)
 
             layout = {
-                'title': f'Client ID {client}',
+                'title': f'CL ID {client} Lounge num {lounge_num}',
                 'xaxis': {'title': 'Date'},
                 'yaxis': {'title': 'Rate'}
             }
