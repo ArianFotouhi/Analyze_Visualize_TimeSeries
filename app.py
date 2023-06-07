@@ -31,8 +31,6 @@ def load_data():
 
 def filter_data(username, df, selected_client, access_clients):
     if selected_client:
-       
-       
 
         if selected_client in access_clients:
             
@@ -49,6 +47,11 @@ def filter_data(username, df, selected_client, access_clients):
         filtered_df = df[df['ClientID'] == users[username]["ClientID"]]
        
     return filtered_df
+
+def LoungeCounter(client_id):
+    df = load_data()
+    unique_count = df.loc[df['ClientID'] == client_id, 'Lounge_ID'].nunique()
+    return unique_count
 
 @app.route('/', methods=['GET'])
 def index():
