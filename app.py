@@ -63,7 +63,7 @@ def LoungeCounter(client_id):
 
 def stream_on_off():
     no_data = {}
-    df = pd.read_csv("data/AAL.csv")
+    df = load_data()
     unique_ids = df['ClientID'].nunique()
 
     for i in range(1,unique_ids+1):                                     
