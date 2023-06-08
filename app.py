@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, session, jsonify
 import pandas as pd
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.secret_key = "!241$gc"
@@ -29,6 +30,13 @@ def load_data():
     # df['Date'] = pd.to_datetime(df['Date'])
     return df
 
+
+
+
+
+
+
+
 def filter_data(username, df, selected_client, access_clients):
     if selected_client:
 
@@ -52,6 +60,32 @@ def LoungeCounter(client_id):
     df = load_data()
     unique_count = df.loc[df['ClientID'] == client_id, 'Lounge_ID'].nunique()
     return unique_count
+
+def stream_on_off():
+    no_data = {}
+    df = pd.read_csv("data/AAL.csv")
+    unique_ids = df['ClientID'].nunique()
+
+    for i in range(1,unique_ids+1):                                     
+    
+        # Assuming the 'time' column is of type datetime
+        df['INTERN_CREATION_DATE'] = pd.to_datetime(df['INTERN_CREATION_DATE'])
+        
+        # Filter the DataFrame for the last record with id=X
+        last_record = df[df['ClientID'] == i].tail(1)
+        # Get the timestamp of the last record
+        last_time = last_record['INTERN_CREATION_DATE'].iat[0]
+         
+        # Calculate the time difference
+        time_diff = datetime.now() - last_time
+
+        # Check if the time difference is more than 10 seconds
+        if time_diff > timedelta(seconds=10):
+           
+            no_data[i] = last_time
+
+    return no_data
+
 
 @app.route('/', methods=['GET'])
 def index():
@@ -97,6 +131,8 @@ def update_plot():
     selected_client = request.form['client']
     df = load_data()
     
+    no_data_dict = stream_on_off()
+
     if selected_client:
         filtered_df = filter_data(session["username"], df, selected_client, selected_client)
         lounge_num= LoungeCounter(int(selected_client))
@@ -117,10 +153,18 @@ def update_plot():
             'yaxis': {'title': 'Rate'}
         }
 
-        return jsonify({'traces': [trace], 'layouts': [layout]})
+        
+        if int(selected_client) in list(no_data_dict.keys()):
+            error_message = f"Last update {no_data_dict[int(selected_client)]}"
+        else:
+            error_message = None
+
+        return jsonify({'traces': [trace], 'layouts': [layout], 'error_messages': error_message})
+
     else:
         traces = []
         layouts = []
+        errors = []
 
         username = session["username"]
         access_clients = users[username]["AccessCL"]
@@ -140,13 +184,20 @@ def update_plot():
             traces.append(trace)
 
             layout = {
-                'title': f'CL ID {client} Lounge num {lounge_num}',
+                'title': f'CL {client} Active Lounge {lounge_num}/{lounge_num}',
                 'xaxis': {'title': 'Date'},
                 'yaxis': {'title': 'Rate'}
             }
             layouts.append(layout)
+           
+            if int(client) in list(no_data_dict.keys()):
+                error_message = f"Last update {no_data_dict[int(client)]}"
+            else:
+                error_message = None
 
-        return jsonify({'traces': traces, 'layouts': layouts})
+            errors.append(error_message)
+
+        return jsonify({'traces': traces, 'layouts': layouts , 'errors': errors})
 
 
 
