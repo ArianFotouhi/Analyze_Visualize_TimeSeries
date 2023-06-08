@@ -4,6 +4,7 @@
     <title>IEG Operations</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         .plot {
@@ -93,6 +94,26 @@
 
     <script type="text/javascript">
         $(document).ready(function() {
+            function createGradientDefs(svg, gradientId, startColor, endColor) {
+                var gradient = svg.append("linearGradient")
+                    .attr("id", gradientId)
+                    .attr("gradientUnits", "userSpaceOnUse")
+                    .attr("x1", "0%")
+                    .attr("y1", "0%")
+                    .attr("x2", "0%")
+                    .attr("y2", "100%");
+
+                gradient.append("stop")
+                    .attr("offset", "0%")
+                    .attr("stop-color", startColor)
+                    .attr("stop-opacity", 1);
+
+                gradient.append("stop")
+                    .attr("offset", "100%")
+                    .attr("stop-color", endColor)
+                    .attr("stop-opacity", 1);
+            }
+
             function updatePlot() {
                 var selectedClient = $('#client').val();
                 var currentDate = new Date();
@@ -134,6 +155,17 @@
                             arrowDiv.append('<br>');
                             arrowDiv.append(growthPercentage.toFixed(2) + '%');
                             chartDiv.append(arrowDiv);
+
+                            // Change line color to gradient
+                            var chartElement = document.getElementById(chartId);
+                            var linePath = chartElement.getElementsByClassName('js-line');
+                            if (linePath.length > 0) {
+                                var svg = d3.select(linePath[0].parentNode);
+                                var gradientId = "gradient-" + i;
+                                createGradientDefs(svg, gradientId, "rgb(0, 255, 0)", "rgb(255, 0, 0)");
+                                linePath[0].style.stroke = "url(#" + gradientId + ")";
+
+                            }
                         }
                     }
                 });
