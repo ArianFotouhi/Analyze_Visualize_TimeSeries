@@ -14,6 +14,12 @@
             position: relative;
         }
 
+        .plot.single {
+            width: 80%;
+            height: 500px;
+            margin: 10px;
+        }
+
         .arrow {
             position: absolute;
             top: 30px;
@@ -150,6 +156,9 @@
                         for (var i = 0; i < traces.length; i++) {
                             var chartId = 'chart-' + i;
                             var chartDiv = $('<div>').attr('id', chartId).addClass('plot');
+                            if (selectedClient !== '') {
+                                chartDiv.addClass('single');
+                            }
                             chartsContainer.append(chartDiv);
                             var data = [traces[i]];
                             var layout = layouts[i];
