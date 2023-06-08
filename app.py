@@ -88,10 +88,21 @@ def stream_on_off():
 
 
 def active_lounges_percent(clients):
-    df = load_data()
-    active_lounges = 0
+    
+    lounge_act={}
+    #act=0
+    #inact=0
     for i in clients:
-        active_lounges += LoungeCounter(i)
+        pass
+
+        #how many of lounges are active:
+            #if  0 < pax_count 
+            # (they are acttive) act++
+            #else
+            #(they are inactive) inact++
+        #return (act, act+inact, inact/(act+inact))
+
+
     #retun:
     #how many of lounges are active
     #how many of lounges are inactive
