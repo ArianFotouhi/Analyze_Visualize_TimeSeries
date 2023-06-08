@@ -87,6 +87,31 @@ def stream_on_off():
     return no_data
 
 
+def active_lounges_percent(clients):
+    df = load_data()
+    active_lounges = 0
+    for i in clients:
+        active_lounges += LoungeCounter(i)
+    #retun:
+    #how many of lounges are active
+    #how many of lounges are inactive
+    #percentage of active lounges
+
+def volume_rate(clients):  
+    #grab all pax of all lounges for a client in previous week
+    #grab all pax of all lounges for a client in current week
+    #percentage of them
+    pass
+
+def active_clients_percent(clients):
+    #how many of clients have at least one active lounge
+    #all clients
+    #percentage of them
+    pass
+
+
+
+
 @app.route('/', methods=['GET'])
 def index():
     if 'username' in session:
@@ -121,8 +146,11 @@ def visual():
     
     data = filtered_df.to_dict(orient='records')
 
-    # lounge_counter_dict = [LoungeCounter(int(j)) for j in access_clients]
+    #finds the active lounges for the selected clients
     
+    lounges_percent = active_lounges_percent(access_clients)
+    volume_ratio = volume_rate(access_clients)
+    active_clients = active_clients_percent(access_clients)   
 
     return render_template('visual.html', data=data, clients=access_clients)
 
