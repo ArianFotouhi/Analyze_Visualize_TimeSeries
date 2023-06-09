@@ -145,13 +145,9 @@ def get_latest_lounge_status(df, time_difference):
             latest_date = pytz.UTC.localize(latest_date)
         else:
             latest_date = latest_date.astimezone(pytz.UTC)
-
-        # Calculate the difference between the current date and the latest date
-        date_diff = (current_date.date() - latest_date.date()).days
-
-        if date_diff <= time_difference:
-            latest_record = group_df.iloc[0]
-            break
+        
+        latest_record = group_df.iloc[0]
+        break
 
     return latest_record
 
@@ -219,6 +215,7 @@ def active_inactive_lounges(clients, time_difference, date_format, convert_optio
         inactive_lounge_ids = set()
 
         latest_record = get_latest_lounge_status(client_df, time_difference)
+        print(latest_record)
         while latest_record is not None:
             lounge_id = latest_record[Lounge_ID_Col]
             received_date = latest_record[Date_col]
@@ -258,30 +255,57 @@ def active_inactive_lounges(clients, time_difference, date_format, convert_optio
 
 
 
-        #how many of lounges are active:
-            #if  0 < pax_count 
-            # (they are acttive) act++
-            #else
-            #(they are inactive) inact++
-        #return (act, act+inact, inact/(act+inact))
+
+def active_clients_percent(clients,actdict, inactdict):
+    active_cli=[]
+    inact_cli=[]
+
+    for i in clients:
+        if i in  actdict:
+            active_cli.append(i)
+        else:
+            inact_cli.append(i)
+    return active_cli, inact_cli
+
+# def volume_rate(clients, amount=5):
+#     rates = {}
+#     #date is not unique
+#     df = load_data()
+#     for client_id in clients:
+#         client_df = df[df[CLName_Col] == client_id]  # Filter the DataFrame for the particular client
+        
+#         volume_sum_x = 0
+#         volume_sum_2x = 0
+#         current_vol = 0
+#         prev_vol = 0
+        
+#         latest_record = client_df.iloc[-1]  # Get the latest record for the client
+
+#         end_index_x = len(client_df) - 1
+#         start_index_x = max(end_index_x - amount + 1, 0)
+#         end_index_2x = max(end_index_x - 2 * amount, 0)
+#         start_index_2x = max(end_index_2x - amount + 1, 0)
+
+#         if start_index_x >= 0:
+#             volume_sum_x = client_df.loc[start_index_x:end_index_x, Volume_ID_Col].sum()
+#             current_vol += volume_sum_x
+
+#         if start_index_2x >= 0:
+#             volume_sum_2x = client_df.loc[start_index_2x:end_index_2x, Volume_ID_Col].sum()
+#             prev_vol += volume_sum_2x
+
+#         rates[client_id] = [volume_sum_x, volume_sum_2x]
+
+#     return rates, current_vol / prev_vol
 
 
-    #retun:
-    #how many of lounges are active
-    #how many of lounges are inactive
-    #percentage of active lounges
+    #this week comapred to its previous week
+    # it takes number of days
+    # x   0:7/7:14  
 
-# def volume_rate(clients):  
-#     #grab all pax of all lounges for a client in previous week
-#     #grab all pax of all lounges for a client in current week
-#     #percentage of them
-#     pass
 
-# def active_clients_percent(clients):
-#     #how many of clients have at least one active lounge
-#     #all clients
-#     #percentage of them
-#     pass
+
+
 
 
 
@@ -322,10 +346,12 @@ def visual():
 
     #finds the active lounges for the selected clients
     
-    # lounges_percent = active_inactive_lounges(access_clients,time_difference=10000, date_format='%Y-%m-%d')
-    # print(lounges_percent)
-    # volume_ratio = volume_rate(access_clients)
-    # active_clients = active_clients_percent(access_clients)   
+    active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients,time_difference=1, date_format='%Y-%m-%d')
+    active_clients, inactive_clients = active_clients_percent(access_clients, active_lounges, inactive_lounges)
+    print(active_lounges, inactive_lounges, act_loung_num, inact_loung_num)
+    print('act/inact cli: ',active_clients, inactive_clients)
+    # volume_ratio = volume_rate(access_clients, amount=5)
+    # print('volume rate: ',volume_ratio)
 
     return render_template('visual.html', data=data, clients=access_clients)
 
