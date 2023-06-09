@@ -339,8 +339,7 @@ def update_plot():
     if selected_client:
         filtered_df = filter_data(session["username"], df, selected_client, selected_client)
         lounge_num= LoungeCounter(str(selected_client))
-        print(filtered_df[Date_col])
-        print(filtered_df[Volume_ID_Col])
+       
         trace = {
             'x': filtered_df[Date_col].unique().tolist(),
             'y': filtered_df.groupby(Date_col)[Volume_ID_Col].sum().to_list(),
@@ -381,9 +380,7 @@ def update_plot():
 
             # Save the combined DataFrame to a CSV file
             combined_df.to_csv('new_data.csv', index=False)
-            print('new')
-            print(client_df[Date_col].unique().tolist())
-            print()
+          
             trace = {
                 'x': client_df[Date_col].unique().tolist(),
                 'y': client_df.groupby(Date_col)[Volume_ID_Col].sum().to_list(),
