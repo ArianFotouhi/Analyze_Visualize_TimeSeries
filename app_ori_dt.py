@@ -267,41 +267,34 @@ def active_clients_percent(clients,actdict, inactdict):
             inact_cli.append(i)
     return active_cli, inact_cli
 
-# def volume_rate(clients, amount=5):
-#     rates = {}
-#     #date is not unique
-#     df = load_data()
-#     for client_id in clients:
-#         client_df = df[df[CLName_Col] == client_id]  # Filter the DataFrame for the particular client
+def volume_rate(clients, amount=5):
+    rates = {}
+    df = load_data()
+    df[Date_col] = pd.to_datetime(df[Date_col])
+    for client_id in clients:
+        client_df = df[df[CLName_Col] == client_id]  # Filter the DataFrame for the particular client
         
-#         volume_sum_x = 0
-#         volume_sum_2x = 0
-#         current_vol = 0
-#         prev_vol = 0
+        volume_sum_x = 0
+        volume_sum_2x = 0
+        current_vol = 0
+        prev_vol = 0
         
-#         latest_record = client_df.iloc[-1]  # Get the latest record for the client
+        latest_record = client_df.iloc[-1]  # Get the latest record for the client
+        
+        last_date = latest_record[Date_col]
+        start_date_x = last_date - pd.DateOffset(days=amount)
+        start_date_2x = last_date - pd.DateOffset(days=2 * amount)
 
-#         end_index_x = len(client_df) - 1
-#         start_index_x = max(end_index_x - amount + 1, 0)
-#         end_index_2x = max(end_index_x - 2 * amount, 0)
-#         start_index_2x = max(end_index_2x - amount + 1, 0)
+        volume_sum_x = client_df[(client_df[Date_col] > start_date_x) & (client_df[Date_col] <= last_date)][Volume_ID_Col].sum()
+        volume_sum_2x = client_df[(client_df[Date_col] > start_date_2x) & (client_df[Date_col] <= start_date_x)][Volume_ID_Col].sum()
+        
+        current_vol = volume_sum_x
+        prev_vol = volume_sum_2x
 
-#         if start_index_x >= 0:
-#             volume_sum_x = client_df.loc[start_index_x:end_index_x, Volume_ID_Col].sum()
-#             current_vol += volume_sum_x
+        rates[client_id] = [volume_sum_x, volume_sum_2x]
 
-#         if start_index_2x >= 0:
-#             volume_sum_2x = client_df.loc[start_index_2x:end_index_2x, Volume_ID_Col].sum()
-#             prev_vol += volume_sum_2x
+    return rates, current_vol,  prev_vol
 
-#         rates[client_id] = [volume_sum_x, volume_sum_2x]
-
-#     return rates, current_vol / prev_vol
-
-
-    #this week comapred to its previous week
-    # it takes number of days
-    # x   0:7/7:14  
 
 
 
@@ -346,14 +339,17 @@ def visual():
 
     #finds the active lounges for the selected clients
     
-    active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients,time_difference=1, date_format='%Y-%m-%d')
+    active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients,time_difference=3, date_format='%Y-%m-%d')
     active_clients, inactive_clients = active_clients_percent(access_clients, active_lounges, inactive_lounges)
     print(active_lounges, inactive_lounges, act_loung_num, inact_loung_num)
     print('act/inact cli: ',active_clients, inactive_clients)
-    # volume_ratio = volume_rate(access_clients, amount=5)
-    # print('volume rate: ',volume_ratio)
+    volume_rates, vol_curr, vol_prev = volume_rate(access_clients, amount=7)
+    print('volume rate: ',volume_rate)
 
-    return render_template('visual.html', data=data, clients=access_clients)
+
+    stat_list = [act_loung_num, inact_loung_num,vol_curr, vol_prev, len(active_clients), len(inactive_clients)]
+
+    return render_template('visual.html', data=data, clients=access_clients, stats=stat_list)
 
 @app.route('/update_plot', methods=['POST'])
 def update_plot():
