@@ -100,14 +100,48 @@
             </li>
             <li class="nav-item">
                 <div class="col-auto">
-                    <button id="update-btn" type="button" class="btn btn-danger">Update</button>
+                    <button id="update-btn" type="button" class="btn btn-primary">Update</button>
                 </div>
             </li>
             <li class="nav-item">
-                <a class="btn btn-danger" href="{{ url_for('logout') }}">Logout</a>
+                <a class="btn btn-primary" href="{{ url_for('logout') }}">Logout</a>
             </li>
         </ul>
     </nav>
+
+<div class="container-fluid">
+    <div id="rates-container" class="row justify-content-center">
+        <div class="col-md-3">
+            <div class="card" style="background-color: azure;">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Active Lounges</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ stats[0] * 100 // (stats[0]+stats[1]) }}%</h6>
+                    <p class="card-text">{{ stats[0] }} / {{ stats[1] }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card" style="background-color: azure;">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Volume Week by Week</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ stats[2] * 100 // stats[3] }}%</h6>
+                    <p class="card-text">{{ stats[2] }} / {{ stats[3] }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card" style="background-color: azure;">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Active Clients</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ stats[4] * 100 // (stats[4]+stats[5]) }}%</h6>
+                    <p class="card-text">{{ stats[4] }} / {{ stats[5] }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    
+
 
     <div class="container-fluid">
         <div id="charts-container" class="row"></div>
