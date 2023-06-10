@@ -6,30 +6,39 @@ app = Flask(__name__)
 app.secret_key = "!241$gc"
 
 
-Date_col ='Date'
-CLName_Col = 'ClientID'
-# LoungNm_Col = 'Lounge_ID'
-Lounge_ID_Col = 'Lounge_ID'
-Volume_ID_Col = 'Volume'
+# Date_col ='Date'
+# CLName_Col = 'ClientID'
+# # LoungNm_Col = 'Lounge_ID'
+# Lounge_ID_Col = 'Lounge_ID'
+# Volume_ID_Col = 'Volume'
+# users = {
+#     "admin": {"password": "admin", "ClientID": 'admin', 'AccessCL':['1','2','3','4','5','6','7','8','9','10']},
+
+#     "user1": {"password": "pass", "ClientID": 1 , 'AccessCL':['1','2','3']},
+#     "user2": {"password": "pass", "ClientID": 2, 'AccessCL':['2']},
+#     "user3": {"password": "pass", "ClientID": 3, 'AccessCL':['3']},
+#     "user4": {"password": "pass", "ClientID": 4, 'AccessCL':['4']},
+#     "user5": {"password": "pass", "ClientID": 5 , 'AccessCL':['5']},
+#     "user6": {"password": "pass", "ClientID": 6 , 'AccessCL':['6']},
+#     "user7": {"password": "pass", "ClientID": 7 , 'AccessCL':['7']},
+#     "user8": {"password": "pass", "ClientID": 8 , 'AccessCL':['8']},
+#     "user9": {"password": "pass", "ClientID": 9 , 'AccessCL':['9']},
+#     "user10": {"password": "pass", "ClientID": 10 , 'AccessCL':['10']},
+# }
 
 
 
+Date_col ='DATE_UTC'
+CLName_Col = 'CLIENT_NAME'
+Lounge_ID_Col = 'lounge_name'
+Volume_ID_Col = 'COUNT_PAX_ALLOWED'
 users = {
-    "admin": {"password": "admin", "ClientID": 'admin', 'AccessCL':['1','2','3','4','5','6','7','8','9','10']},
+    "admin": {"password": "admin", "ClientID": 'admin', 'AccessCL':['LH','LX','MAG']},
 
-    "user1": {"password": "pass", "ClientID": 1 , 'AccessCL':['1','2','3']},
-    "user2": {"password": "pass", "ClientID": 2, 'AccessCL':['2']},
-    "user3": {"password": "pass", "ClientID": 3, 'AccessCL':['3']},
-    "user4": {"password": "pass", "ClientID": 4, 'AccessCL':['4']},
-    "user5": {"password": "pass", "ClientID": 5 , 'AccessCL':['5']},
-    "user6": {"password": "pass", "ClientID": 6 , 'AccessCL':['6']},
-    "user7": {"password": "pass", "ClientID": 7 , 'AccessCL':['7']},
-    "user8": {"password": "pass", "ClientID": 8 , 'AccessCL':['8']},
-    "user9": {"password": "pass", "ClientID": 9 , 'AccessCL':['9']},
-    "user10": {"password": "pass", "ClientID": 10 , 'AccessCL':['10']},
+    "user1": {"password": "pass", "ClientID": 1 , 'AccessCL':['MAG','LAX']},
+    "user2": {"password": "pass", "ClientID": 2, 'AccessCL':['LH']},
+    "user3": {"password": "pass", "ClientID": 3, 'AccessCL':['LAX']},
 }
-
-
 
 
 def authenticate(username, password):
@@ -38,7 +47,7 @@ def authenticate(username, password):
     return False
 
 def load_data():
-    df = pd.read_csv("data/AAL.csv")
+    df = pd.read_csv("data/data.txt")
     # df['Date'] = pd.to_datetime(df['Date'])
     return df
 
@@ -55,7 +64,7 @@ def filter_data(username, df, selected_client, access_clients):
         if selected_client in access_clients:
             
         # filtering of client on upper left of screen
-            filtered_df = df[df[CLName_Col] == int(selected_client)]
+            filtered_df = df[df[CLName_Col] == str(selected_client)]
         else:
             filtered_df = None
 
@@ -136,13 +145,9 @@ def get_latest_lounge_status(df, time_difference):
             latest_date = pytz.UTC.localize(latest_date)
         else:
             latest_date = latest_date.astimezone(pytz.UTC)
-
-        # Calculate the difference between the current date and the latest date
-        date_diff = (current_date.date() - latest_date.date()).days
-
-        if date_diff <= time_difference:
-            latest_record = group_df.iloc[0]
-            break
+        
+        latest_record = group_df.iloc[0]
+        break
 
     return latest_record
 
@@ -210,6 +215,7 @@ def active_inactive_lounges(clients, time_difference, date_format, convert_optio
         inactive_lounge_ids = set()
 
         latest_record = get_latest_lounge_status(client_df, time_difference)
+        print(latest_record)
         while latest_record is not None:
             lounge_id = latest_record[Lounge_ID_Col]
             received_date = latest_record[Date_col]
@@ -249,30 +255,50 @@ def active_inactive_lounges(clients, time_difference, date_format, convert_optio
 
 
 
-        #how many of lounges are active:
-            #if  0 < pax_count 
-            # (they are acttive) act++
-            #else
-            #(they are inactive) inact++
-        #return (act, act+inact, inact/(act+inact))
+
+def active_clients_percent(clients,actdict, inactdict):
+    active_cli=[]
+    inact_cli=[]
+
+    for i in clients:
+        if i in  actdict:
+            active_cli.append(i)
+        else:
+            inact_cli.append(i)
+    return active_cli, inact_cli
+
+def volume_rate(clients, amount=5):
+    rates = {}
+    df = load_data()
+    df[Date_col] = pd.to_datetime(df[Date_col])
+    for client_id in clients:
+        client_df = df[df[CLName_Col] == client_id]  # Filter the DataFrame for the particular client
+        
+        volume_sum_x = 0
+        volume_sum_2x = 0
+        current_vol = 0
+        prev_vol = 0
+        
+        latest_record = client_df.iloc[-1]  # Get the latest record for the client
+        
+        last_date = latest_record[Date_col]
+        start_date_x = last_date - pd.DateOffset(days=amount)
+        start_date_2x = last_date - pd.DateOffset(days=2 * amount)
+
+        volume_sum_x = client_df[(client_df[Date_col] > start_date_x) & (client_df[Date_col] <= last_date)][Volume_ID_Col].sum()
+        volume_sum_2x = client_df[(client_df[Date_col] > start_date_2x) & (client_df[Date_col] <= start_date_x)][Volume_ID_Col].sum()
+        
+        current_vol = volume_sum_x
+        prev_vol = volume_sum_2x
+
+        rates[client_id] = [volume_sum_x, volume_sum_2x]
+
+    return rates, current_vol / prev_vol
 
 
-    #retun:
-    #how many of lounges are active
-    #how many of lounges are inactive
-    #percentage of active lounges
 
-# def volume_rate(clients):  
-#     #grab all pax of all lounges for a client in previous week
-#     #grab all pax of all lounges for a client in current week
-#     #percentage of them
-#     pass
 
-# def active_clients_percent(clients):
-#     #how many of clients have at least one active lounge
-#     #all clients
-#     #percentage of them
-#     pass
+
 
 
 
@@ -313,10 +339,12 @@ def visual():
 
     #finds the active lounges for the selected clients
     
-    lounges_percent = active_inactive_lounges(access_clients,time_difference=10000, date_format='%Y-%m-%d')
-    print(lounges_percent)
-    # volume_ratio = volume_rate(access_clients)
-    # active_clients = active_clients_percent(access_clients)   
+    active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients,time_difference=1, date_format='%Y-%m-%d')
+    active_clients, inactive_clients = active_clients_percent(access_clients, active_lounges, inactive_lounges)
+    print(active_lounges, inactive_lounges, act_loung_num, inact_loung_num)
+    print('act/inact cli: ',active_clients, inactive_clients)
+    volume_ratio = volume_rate(access_clients, amount=5)
+    print('volume rate: ',volume_ratio)
 
     return render_template('visual.html', data=data, clients=access_clients)
 
@@ -325,16 +353,16 @@ def update_plot():
     selected_client = request.form['client']
     df = load_data()
     
-    no_data_dict = stream_on_off(scale='hour',length=1)
-
+    # no_data_dict = stream_on_off(scale='hour',length=1)
+    no_data_dict = {}
     if selected_client:
         filtered_df = filter_data(session["username"], df, selected_client, selected_client)
-        lounge_num= LoungeCounter(int(selected_client))
-
+        lounge_num= LoungeCounter(str(selected_client))
+       
         trace = {
-            'x': filtered_df[Date_col].tolist(),
-            'y': filtered_df[Volume_ID_Col].tolist(),
-            'text': filtered_df.apply(lambda row: f"ClientID: {row[CLName_Col]}<br>Low: {row['Low']}", axis=1).tolist(),
+            'x': filtered_df[Date_col].unique().tolist(),
+            'y': filtered_df.groupby(Date_col)[Volume_ID_Col].sum().to_list(),
+            'text': filtered_df.groupby(Date_col)[Volume_ID_Col].sum().apply(lambda x: f"Rate: {x}<br>").tolist(),
             'hovertemplate': '%{text}',
             'type': 'scatter',
             'mode': 'lines',
@@ -348,8 +376,8 @@ def update_plot():
         }
 
         
-        if int(selected_client) in list(no_data_dict.keys()):
-            error_message = f"Last update {no_data_dict[int(selected_client)]}"
+        if str(selected_client) in list(no_data_dict.keys()):
+            error_message = f"Last update {no_data_dict[str(selected_client)]}"
         else:
             error_message = None
 
@@ -365,11 +393,17 @@ def update_plot():
 
         for client in access_clients:
             client_df = filter_data(session["username"], df, client, access_clients)
-            lounge_num= LoungeCounter(int(client))
+            lounge_num= LoungeCounter(str(client))
+           
+            combined_df = pd.concat([client_df[Date_col], client_df[Volume_ID_Col]], axis=1)
+
+            # Save the combined DataFrame to a CSV file
+            combined_df.to_csv('new_data.csv', index=False)
+          
             trace = {
-                'x': client_df['Date'].tolist(),
-                'y': client_df[Volume_ID_Col].tolist(),
-                'text': client_df.apply(lambda row: f"ClientID: {row[CLName_Col]}<br>Low: {row['Low']}", axis=1).tolist(),
+                'x': client_df[Date_col].unique().tolist(),
+                'y': client_df.groupby(Date_col)[Volume_ID_Col].sum().to_list(),
+                'text': client_df.groupby(Date_col)[Volume_ID_Col].sum().apply(lambda x: f"Rate: {x}<br>").tolist(),
                 'hovertemplate': '%{text}',
                 'type': 'scatter',
                 'mode': 'lines',
@@ -378,14 +412,14 @@ def update_plot():
             traces.append(trace)
 
             layout = {
-                'title': f'CL {client} Active Lounge {lounge_num}/{lounge_num}',
+                'title': f'{client} Active Lounge {lounge_num}/{lounge_num}',
                 'xaxis': {'title': 'Date'},
                 'yaxis': {'title': 'Rate'}
             }
             layouts.append(layout)
            
-            if int(client) in list(no_data_dict.keys()):
-                error_message = f"Last update {no_data_dict[int(client)]}"
+            if str(client) in list(no_data_dict.keys()):
+                error_message = f"Last update {no_data_dict[str(client)]}"
             else:
                 error_message = None
 
