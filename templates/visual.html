@@ -173,7 +173,7 @@
                 var selectedClient = $('#client').val();
                 var currentDate = new Date();
                 var lastUpdate = currentDate.toLocaleString();
-                $('#last-update').text('Last Update: ' + lastUpdate);
+                $('#last-update').text('Last Update: a few seconds ago at ' + lastUpdate);
 
                 $.ajax({
                     url: '/update_plot',
