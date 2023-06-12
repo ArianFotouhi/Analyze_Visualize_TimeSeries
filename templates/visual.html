@@ -83,24 +83,13 @@
             </ul>
         </div>
 
-    <form action="/visual" method="post">
-            {% for key, values in filters.items() %}
-            <label for="{{ key }}">{{ key|capitalize }}:</label>
-            <select name="{{ key }}" id="{{ key }}" multiple>
-                <option value="All">All</option>
-                {% for value in values %}
-                    <option value="{{ value }}">{{ value }}</option>
-                {% endfor %}
-            </select>
-            <br>
-            {% endfor %}
-            <button type="submit">Filter</button>
-    </form>
+ 
 
         <ul class="navbar-nav ml-auto">
             <li class="nav-item">
                 <form id="client-form" action="/visual" method="get">
                     <div class="form-row align-items-center">
+                        
                         <div class="col-auto">
                             <select class="custom-select" id="client" name="client">
                                 <option value="">All Clients</option>
@@ -108,9 +97,18 @@
                                     <option value="{{ client }}" {% if client == selected_client %}selected{% endif %}>Client {{ client }}</option>
                                 {% endfor %}
                             </select>
+
+                            <select class="custom-select" id="lounge_name" name="lounge_name">
+                                <option value="">All Lounges</option>
+                                {% for lounge_name in cl_lounges_[''] %}
+                                    <option value="{{ lounge_name }}" >Lounge {{ lounge_name }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
+
                     </div>
                 </form>
+                
             </li>
             <li class="nav-item">
                 <div class="col-auto">
@@ -185,6 +183,9 @@
 
             function updatePlot() {
                 var selectedClient = $('#client').val();
+                var selectedLounge = $('#lounge_name').val();
+
+
                 var currentDate = new Date();
                 var lastUpdate = currentDate.toLocaleString();
                 $('#last-update').text('Last Update: a few seconds ago at ' + lastUpdate);
@@ -192,7 +193,8 @@
                 $.ajax({
                     url: '/update_plot',
                     type: 'POST',
-                    data: { client: selectedClient },
+                    data: { client: selectedClient, lounge_name: selectedLounge},
+
                     success: function(response) {
                         var traces = response.traces;
                         var layouts = response.layouts;
