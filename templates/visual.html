@@ -83,6 +83,20 @@
             </ul>
         </div>
 
+    <form action="/visual" method="post">
+            {% for key, values in filters.items() %}
+            <label for="{{ key }}">{{ key|capitalize }}:</label>
+            <select name="{{ key }}" id="{{ key }}" multiple>
+                <option value="All">All</option>
+                {% for value in values %}
+                    <option value="{{ value }}">{{ value }}</option>
+                {% endfor %}
+            </select>
+            <br>
+            {% endfor %}
+            <button type="submit">Filter</button>
+    </form>
+
         <ul class="navbar-nav ml-auto">
             <li class="nav-item">
                 <form id="client-form" action="/visual" method="get">
