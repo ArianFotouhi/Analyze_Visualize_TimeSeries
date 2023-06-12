@@ -59,9 +59,7 @@ def load_data():
 
 
 
-def filter_data(username, df, selected_client, access_clients):
-    
-
+def filter_data_by_cl(username, df, selected_client, access_clients):
     
     if selected_client:
         if selected_client in access_clients:
@@ -73,10 +71,19 @@ def filter_data(username, df, selected_client, access_clients):
     elif users[username]['ClientID'] == 'admin':
         return df
     else:
-        print('i AM IN ELSE')
         # filtered_df = df[df[CLName_Col] == users[username]['AccessCL']]
         filtered_df = df[df[CLName_Col].isin(list(users[username]['AccessCL']))]
     return filtered_df
+
+
+def dropdown_menu_filter(df, col_name,selected_val):
+    
+    filtered_df = df[df[col_name] == selected_val]
+
+
+    return filtered_df
+
+
 
 def LoungeCounter(client_id):
     df = load_data()
@@ -208,7 +215,7 @@ def active_inactive_lounges(clients, time_difference, date_format, convert_optio
     inact_loung_num = 0
 
     for client_id in clients:
-        client_df = filter_data(session["username"], df, client_id, clients)
+        client_df = filter_data_by_cl(session["username"], df, client_id, clients)
         active_lounge_ids = set()
         inactive_lounge_ids = set()
 
@@ -323,7 +330,6 @@ def visual():
     if 'username' not in session:
         return redirect('/login')
 
-    # selected_client = request.args.get('client', '')
     df = load_data()
 
 ################################
@@ -332,9 +338,7 @@ def visual():
     username = session["username"]
     access_clients = users[username]["AccessCL"]
 
-    print('accesse_list in visual path: ',access_clients)
-    accessed_df = filter_data(session["username"], df, '', access_clients)
-    print('accessed_df in visual path: ',accessed_df)
+    accessed_df = filter_data_by_cl(session["username"], df, '', access_clients)
 
     data = accessed_df.to_dict(orient='records')
 
@@ -342,31 +346,32 @@ def visual():
 
     active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients,time_difference=3, date_format='%Y-%m-%d')
     active_clients, inactive_clients = active_clients_percent(access_clients, active_lounges, inactive_lounges)
-    print(active_lounges, inactive_lounges, act_loung_num, inact_loung_num)
+    # print(active_lounges, inactive_lounges, act_loung_num, inact_loung_num)
     # print('act/inact cli: ',active_clients, inactive_clients)
     volume_rates, vol_curr, vol_prev = volume_rate(access_clients, amount=7)
     # print('volume rate: ',volume_rate)
 
-    if request.method == 'POST':
-        selected_filters = {k: request.form.getlist(k) for k in request.form}
-        filtered_products = accessed_df.to_dict(orient='records')  # Convert DataFrame to a list of dictionaries
+    # if request.method == 'POST':
+    #     selected_filters = {k: request.form.getlist(k) for k in request.form}
+    #     filtered_products = accessed_df.to_dict(orient='records')  # Convert DataFrame to a list of dictionaries
 
-        for key, values in selected_filters.items():
+    #     for key, values in selected_filters.items():
+    #         print('key: start', key,'end')
+    #         if values and 'All' not in values:
+    #             filtered_products = [product for product in filtered_products if product[key] in values]
 
-            if values and 'All' not in values:
-                filtered_products = [product for product in filtered_products if product[key] in values]
-
-        print('filtered products: ',filtered_products)
+    #     print('filtered products: ',filtered_products)
 
     stat_list = [act_loung_num, inact_loung_num,vol_curr, vol_prev, len(active_clients), len(inactive_clients)]
 
-    filters = {
-        CLName_Col: set(accessed_df[CLName_Col].unique()),
-        Lounge_ID_Col: set(accessed_df[Lounge_ID_Col].unique()),
-        Date_col: set(accessed_df[Date_col].unique()),
+    
+    # filters = {
+    #     CLName_Col: set(accessed_df[CLName_Col].unique()),
+    #     Lounge_ID_Col: set(accessed_df[Lounge_ID_Col].unique()),
+    #     Date_col: set(accessed_df[Date_col].unique()),
 
-    }
-    return render_template('visual.html', data=data, clients=access_clients, stats=stat_list, filters=filters)
+    # }
+    return render_template('visual.html', data=data, clients=access_clients, stats=stat_list)
 
 ################################
 
@@ -376,19 +381,38 @@ def visual():
 @app.route('/update_plot', methods=['POST'])
 def update_plot():
     selected_client = request.form['client']
+    selected_lounge = request.form['lounge_name']
+    selected_date = request.form['date']
+
     df = load_data()
-    
+
+
+    print('selected_filters in ajax: ',selected_date,selected_lounge ,selected_client)
     #scales: sec, min, hour, day, mo, year
-    no_data_dict = stream_on_off(scale='day',length=7)
+    no_data_dict = stream_on_off(scale='day', length=7)
+
+    #to avoid strem monitoring
     # no_data_dict = {}
-    if selected_client:
-        filtered_df = filter_data(session["username"], df, selected_client, selected_client)
-        lounge_num= LoungeCounter(str(selected_client))
-       
+
+    if selected_client or selected_lounge or selected_date:
+
+        if selected_client:
+            df = dropdown_menu_filter(df,CLName_Col ,selected_client)
+            lounge_num= LoungeCounter(str(selected_client))
+
+        if selected_lounge:
+            df = dropdown_menu_filter(df,Lounge_ID_Col ,selected_lounge)
+        
+        if selected_date:
+            df = dropdown_menu_filter(df,Date_col ,selected_date)
+
+
+
+
         trace = {
-            'x': filtered_df[Date_col].unique().tolist(),
-            'y': filtered_df.groupby(Date_col)[Volume_ID_Col].sum().to_list(),
-            'text': filtered_df.groupby(Date_col)[Volume_ID_Col].sum().apply(lambda x: f"Rate: {x}<br>").tolist(),
+            'x': df[Date_col].unique().tolist(),
+            'y': df.groupby(Date_col)[Volume_ID_Col].sum().to_list(),
+            'text': df.groupby(Date_col)[Volume_ID_Col].sum().apply(lambda x: f"Rate: {x}<br>").tolist(),
             'hovertemplate': '%{text}',
             'type': 'scatter',
             'mode': 'lines',
@@ -418,13 +442,9 @@ def update_plot():
         access_clients = users[username]["AccessCL"]
 
         for client in access_clients:
-            client_df = filter_data(session["username"], df, client, access_clients)
+            client_df = filter_data_by_cl(session["username"], df, client, access_clients)
             lounge_num= LoungeCounter(str(client))
-           
-            combined_df = pd.concat([client_df[Date_col], client_df[Volume_ID_Col]], axis=1)
-
-            # Save the combined DataFrame to a CSV file
-            combined_df.to_csv('new_data.csv', index=False)
+    
           
             trace = {
                 'x': client_df[Date_col].unique().tolist(),
