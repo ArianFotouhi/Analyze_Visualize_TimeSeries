@@ -364,7 +364,9 @@ def visual():
 
     filters = {
         CLName_Col: set(df[CLName_Col].unique()),
-        Lounge_ID_Col: set(df[Lounge_ID_Col].unique())
+        Lounge_ID_Col: set(df[Lounge_ID_Col].unique()),
+        Date_col: set(df[Date_col].unique()),
+
     }
     return render_template('visual.html', data=df, clients=access_clients, stats=stat_list, filters=filters)
 
