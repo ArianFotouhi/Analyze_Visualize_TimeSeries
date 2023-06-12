@@ -60,17 +60,17 @@ def load_data():
 
 def filter_data(username, df, selected_client, access_clients):
     
-    if users[username]['ClientID'] == 'admin':
-        return df
+
     
-    elif selected_client:
+    if selected_client:
         if selected_client in access_clients:
         # filtering of client on upper left of screen
             filtered_df = df[df[CLName_Col] == str(selected_client)]
         else:
             filtered_df = None
 
-
+    elif users[username]['ClientID'] == 'admin':
+        return df
     else:
         print('i AM IN ELSE')
         # filtered_df = df[df[CLName_Col] == users[username]['AccessCL']]
@@ -334,10 +334,10 @@ def visual():
     access_clients = users[username]["AccessCL"]
 
     print('accesse_list in visual path: ',access_clients)
-    accessed_df = filter_data(session["username"], df, None, access_clients)
+    accessed_df = filter_data(session["username"], df, '', access_clients)
     print('accessed_df in visual path: ',accessed_df)
 
-    # data = filtered_df.to_dict(orient='records')
+    data = accessed_df.to_dict(orient='records')
 
     #finds the active lounges for the selected clients
 
@@ -367,7 +367,7 @@ def visual():
         Date_col: set(accessed_df[Date_col].unique()),
 
     }
-    return render_template('visual.html', data=accessed_df, clients=access_clients, stats=stat_list, filters=filters)
+    return render_template('visual.html', data=data, clients=access_clients, stats=stat_list, filters=filters)
 
 ################################
 
