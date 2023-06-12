@@ -206,7 +206,7 @@
                         for (var i = 0; i < traces.length; i++) {
                             var chartId = 'chart-' + i;
                             var chartDiv = $('<div>').attr('id', chartId).addClass('plot');
-                            if (selectedClient !== '') {
+                            if (selectedClient !== '' || selectedLounge !=='') {
                                 chartDiv.addClass('single');
                             }
                             chartsContainer.append(chartDiv);
