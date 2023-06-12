@@ -300,6 +300,34 @@ def volume_rate(clients, amount=5):
     return rates, current_vol,  prev_vol
 
 
+def cl_lounges_dict(column):
+    if column =='lounges':
+        username = session["username"]
+        cl_list = users[username]["AccessCL"]
+        
+        actives, inactives, _, _ = active_inactive_lounges(users[username]["AccessCL"],time_difference=3, date_format='%Y-%m-%d')
+
+        
+        output = {}
+        for i in cl_list:
+            if i in actives and i in inactives:
+                output[i] = list(set(actives[i].extend(inactives[i])))
+            elif i in actives:
+                output[i] = actives[i]
+            else:
+                output[i] = inactives[i]
+        
+        output[''] = []
+        for i in output:
+            if i != '':
+                output[''].extend(output[i])
+        print('size: ', len(output['']))
+
+
+        return output
+    
+    elif column == 'airport':
+        pass
 
 
 
@@ -335,6 +363,7 @@ def visual():
 ################################
    
     
+
     username = session["username"]
     access_clients = users[username]["AccessCL"]
 
@@ -349,6 +378,8 @@ def visual():
     # print(active_lounges, inactive_lounges, act_loung_num, inact_loung_num)
     # print('act/inact cli: ',active_clients, inactive_clients)
     volume_rates, vol_curr, vol_prev = volume_rate(access_clients, amount=7)
+    cl_lounges_ = cl_lounges_dict('lounges')
+    print('cl_lounges: ',cl_lounges_)
     # print('volume rate: ',volume_rate)
 
     # if request.method == 'POST':
@@ -371,7 +402,8 @@ def visual():
     #     Date_col: set(accessed_df[Date_col].unique()),
 
     # }
-    return render_template('visual.html', data=data, clients=access_clients, stats=stat_list)
+    print('GR: ',cl_lounges_)
+    return render_template('visual.html', data= data, clients= access_clients, stats= stat_list, cl_lounges_= cl_lounges_)
 
 ################################
 
@@ -382,19 +414,20 @@ def visual():
 def update_plot():
     selected_client = request.form['client']
     selected_lounge = request.form['lounge_name']
-    selected_date = request.form['date']
+   
 
+    
     df = load_data()
 
 
-    print('selected_filters in ajax: ',selected_date,selected_lounge ,selected_client)
+    print('selected_filters in ajax: ',selected_lounge ,selected_client)
     #scales: sec, min, hour, day, mo, year
     no_data_dict = stream_on_off(scale='day', length=7)
 
     #to avoid strem monitoring
     # no_data_dict = {}
 
-    if selected_client or selected_lounge or selected_date:
+    if selected_client or selected_lounge :
 
         if selected_client:
             df = dropdown_menu_filter(df,CLName_Col ,selected_client)
@@ -403,9 +436,7 @@ def update_plot():
         if selected_lounge:
             df = dropdown_menu_filter(df,Lounge_ID_Col ,selected_lounge)
         
-        if selected_date:
-            df = dropdown_menu_filter(df,Date_col ,selected_date)
-
+        
 
 
 
@@ -471,6 +502,8 @@ def update_plot():
 
             errors.append(error_message)
 
+        
+        
         return jsonify({'traces': traces, 'layouts': layouts , 'errors': errors})
 
 
