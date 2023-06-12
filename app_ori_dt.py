@@ -420,7 +420,8 @@ def update_plot():
     selected_client = request.form['client']
     selected_lounge = request.form['lounge_name']
    
-
+    username = session["username"]
+    access_clients = users[username]["AccessCL"]
     
     df = load_data()
 
@@ -433,22 +434,36 @@ def update_plot():
     # no_data_dict = {}
 
     if selected_client or selected_lounge :
-        
-        lounge_num = 0
+        active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients,time_difference=3, date_format='%Y-%m-%d')
+
+        # lounge_num  = LoungeCounter(str(client))
+
+                
+      
 
         if selected_client:
             df = dropdown_menu_filter(df,CLName_Col ,selected_client)
-            lounge_num = LoungeCounter(name = str(selected_client))
+            # lounge_num = LoungeCounter(name = str(selected_client))
             
 
         if selected_lounge:
             df = dropdown_menu_filter(df,Lounge_ID_Col ,selected_lounge)
-            if lounge_num == 0:
-
-                #modality can be 'lg' or'cl'
-                lounge_num, selected_client = LoungeCounter(name = str(selected_lounge), modality='lg')
+           
+            # modality can be 'lg' or'cl'
+            print('selected_client', selected_client)
+            if selected_client == '':
+                lounge_num, selected_client  = LoungeCounter(name = str(selected_lounge), modality='lg')
+                
         
-
+        if selected_client in active_lounges:
+                actives = len(active_lounges[selected_client])
+        else:
+                actives = 0
+        if selected_client in inactive_lounges:
+                inactives = len(inactive_lounges[selected_client])
+        else:
+                inactives = 0
+                # lounge_num = 0
 
 
         trace = {
@@ -462,7 +477,7 @@ def update_plot():
         }
 
         layout = {
-            'title': f'CL ID {selected_client} Lounge num {lounge_num}',
+            'title': f'CL {selected_client} Active Lounge {actives}/{ actives + inactives}',
             'xaxis': {'title': 'Date'},
             'yaxis': {'title': 'Rate'}
         }
@@ -479,14 +494,24 @@ def update_plot():
         traces = []
         layouts = []
         errors = []
+       
 
-        username = session["username"]
-        access_clients = users[username]["AccessCL"]
+        active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients,time_difference=3, date_format='%Y-%m-%d')
+
 
         for client in access_clients:
             client_df = filter_data_by_cl(session["username"], df, client, access_clients)
-            lounge_num  = LoungeCounter(str(client))
-    
+            # lounge_num  = LoungeCounter(str(client))
+
+            print('client: ',client)
+            if str(client) in active_lounges:
+                actives = len(active_lounges[str(client)])
+            else:
+                actives = 0
+            if client in inactive_lounges:
+                inactives = len(inactive_lounges[str(client)])
+            else:
+                inactives = 0
           
             trace = {
                 'x': client_df[Date_col].unique().tolist(),
@@ -500,7 +525,7 @@ def update_plot():
             traces.append(trace)
 
             layout = {
-                'title': f'{client} Active Lounge {lounge_num}/{lounge_num}',
+                'title': f'{client} Active Lounge {actives}/{ actives + inactives}',
                 'xaxis': {'title': 'Date'},
                 'yaxis': {'title': 'Rate'}
             }
