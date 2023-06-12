@@ -85,10 +85,15 @@ def dropdown_menu_filter(df, col_name,selected_val):
 
 
 
-def LoungeCounter(client_id):
+def LoungeCounter(name, modality='cl'):
     df = load_data()
-    unique_count = df.loc[df[CLName_Col] == client_id, Lounge_ID_Col].nunique()
-    return unique_count
+    if modality == 'cl':
+        unique_count = df.loc[df[CLName_Col] == name, Lounge_ID_Col].nunique()
+        return unique_count
+    elif modality == 'lg':
+        cl = df.loc[df[Lounge_ID_Col] == name][CLName_Col][-1:].values[0]
+        unique_count = LoungeCounter(name=cl)
+        return unique_count, cl
 
 
 
@@ -428,14 +433,20 @@ def update_plot():
     # no_data_dict = {}
 
     if selected_client or selected_lounge :
+        
+        lounge_num = 0
 
         if selected_client:
             df = dropdown_menu_filter(df,CLName_Col ,selected_client)
-            lounge_num= LoungeCounter(str(selected_client))
+            lounge_num = LoungeCounter(name = str(selected_client))
+            
 
         if selected_lounge:
             df = dropdown_menu_filter(df,Lounge_ID_Col ,selected_lounge)
-        
+            if lounge_num == 0:
+
+                #modality can be 'lg' or'cl'
+                lounge_num, selected_client = LoungeCounter(name = str(selected_lounge), modality='lg')
         
 
 
@@ -474,7 +485,7 @@ def update_plot():
 
         for client in access_clients:
             client_df = filter_data_by_cl(session["username"], df, client, access_clients)
-            lounge_num= LoungeCounter(str(client))
+            lounge_num  = LoungeCounter(str(client))
     
           
             trace = {
