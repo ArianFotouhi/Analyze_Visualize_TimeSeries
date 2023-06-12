@@ -35,9 +35,9 @@ Volume_ID_Col = 'COUNT_PAX_ALLOWED'
 users = {
     "admin": {"password": "admin", "ClientID": 'admin', 'AccessCL':['LH','LX','MAG']},
 
-    "user1": {"password": "pass", "ClientID": 1 , 'AccessCL':['MAG','LAX']},
+    "user1": {"password": "pass", "ClientID": 1 , 'AccessCL':['MAG','LX']},
     "user2": {"password": "pass", "ClientID": 2, 'AccessCL':['LH']},
-    "user3": {"password": "pass", "ClientID": 3, 'AccessCL':['LAX']},
+    "user3": {"password": "pass", "ClientID": 3, 'AccessCL':['LX']},
 }
 
 
@@ -59,22 +59,22 @@ def load_data():
 
 
 def filter_data(username, df, selected_client, access_clients):
-    if selected_client:
-
+    
+    if users[username]['ClientID'] == 'admin':
+        return df
+    
+    elif selected_client:
         if selected_client in access_clients:
-            
         # filtering of client on upper left of screen
             filtered_df = df[df[CLName_Col] == str(selected_client)]
         else:
             filtered_df = None
 
-    elif users[username]['ClientID'] == 'admin':
-        
-        return df
+
     else:
-       
-        filtered_df = df[df[CLName_Col] == users[username]['ClientID']]
-       
+        print('i AM IN ELSE')
+        # filtered_df = df[df[CLName_Col] == users[username]['AccessCL']]
+        filtered_df = df[df[CLName_Col].isin(list(users[username]['AccessCL']))]
     return filtered_df
 
 def LoungeCounter(client_id):
@@ -333,9 +333,9 @@ def visual():
     username = session["username"]
     access_clients = users[username]["AccessCL"]
 
-
-    # filtered_df = filter_data(session["username"], df, selected_client, access_clients)
-
+    print('accesse_list in visual path: ',access_clients)
+    accessed_df = filter_data(session["username"], df, None, access_clients)
+    print('accessed_df in visual path: ',accessed_df)
 
     # data = filtered_df.to_dict(orient='records')
 
@@ -344,17 +344,16 @@ def visual():
     active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients,time_difference=3, date_format='%Y-%m-%d')
     active_clients, inactive_clients = active_clients_percent(access_clients, active_lounges, inactive_lounges)
     print(active_lounges, inactive_lounges, act_loung_num, inact_loung_num)
-    print('act/inact cli: ',active_clients, inactive_clients)
+    # print('act/inact cli: ',active_clients, inactive_clients)
     volume_rates, vol_curr, vol_prev = volume_rate(access_clients, amount=7)
-    print('volume rate: ',volume_rate)
+    # print('volume rate: ',volume_rate)
 
     if request.method == 'POST':
         selected_filters = {k: request.form.getlist(k) for k in request.form}
-        filtered_products = df.to_dict(orient='records')  # Convert DataFrame to a list of dictionaries
+        filtered_products = accessed_df.to_dict(orient='records')  # Convert DataFrame to a list of dictionaries
 
         for key, values in selected_filters.items():
-            print('key: ',key)
-            print('values: ',values)
+
             if values and 'All' not in values:
                 filtered_products = [product for product in filtered_products if product[key] in values]
 
@@ -363,12 +362,12 @@ def visual():
     stat_list = [act_loung_num, inact_loung_num,vol_curr, vol_prev, len(active_clients), len(inactive_clients)]
 
     filters = {
-        CLName_Col: set(df[CLName_Col].unique()),
-        Lounge_ID_Col: set(df[Lounge_ID_Col].unique()),
-        Date_col: set(df[Date_col].unique()),
+        CLName_Col: set(accessed_df[CLName_Col].unique()),
+        Lounge_ID_Col: set(accessed_df[Lounge_ID_Col].unique()),
+        Date_col: set(accessed_df[Date_col].unique()),
 
     }
-    return render_template('visual.html', data=df, clients=access_clients, stats=stat_list, filters=filters)
+    return render_template('visual.html', data=accessed_df, clients=access_clients, stats=stat_list, filters=filters)
 
 ################################
 
