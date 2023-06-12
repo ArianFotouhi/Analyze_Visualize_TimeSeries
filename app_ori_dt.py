@@ -82,8 +82,7 @@ def LoungeCounter(client_id):
     unique_count = df.loc[df[CLName_Col] == client_id, Lounge_ID_Col].nunique()
     return unique_count
 
-import pandas as pd
-from datetime import datetime, timedelta
+
 
 def stream_on_off(scale='sec', length=10):
     no_data = {}
@@ -215,7 +214,6 @@ def active_inactive_lounges(clients, time_difference, date_format, convert_optio
         inactive_lounge_ids = set()
 
         latest_record = get_latest_lounge_status(client_df, time_difference)
-        print(latest_record)
         while latest_record is not None:
             lounge_id = latest_record[Lounge_ID_Col]
             received_date = latest_record[Date_col]
@@ -321,24 +319,28 @@ def login():
             return render_template("login.html", error="Invalid username or password")
     return render_template("login.html")
 
-@app.route('/visual', methods=['GET'])
+@app.route('/visual', methods=['GET','POST'])
 def visual():
     if 'username' not in session:
         return redirect('/login')
 
-    selected_client = request.args.get('client', '')
+    # selected_client = request.args.get('client', '')
+    df = load_data()
 
+################################
+   
+    
     username = session["username"]
     access_clients = users[username]["AccessCL"]
 
-    df = load_data()
-    filtered_df = filter_data(session["username"], df, selected_client, access_clients)
-    
-    
-    data = filtered_df.to_dict(orient='records')
+
+    # filtered_df = filter_data(session["username"], df, selected_client, access_clients)
+
+
+    # data = filtered_df.to_dict(orient='records')
 
     #finds the active lounges for the selected clients
-    
+
     active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients,time_difference=3, date_format='%Y-%m-%d')
     active_clients, inactive_clients = active_clients_percent(access_clients, active_lounges, inactive_lounges)
     print(active_lounges, inactive_lounges, act_loung_num, inact_loung_num)
@@ -346,10 +348,30 @@ def visual():
     volume_rates, vol_curr, vol_prev = volume_rate(access_clients, amount=7)
     print('volume rate: ',volume_rate)
 
+    if request.method == 'POST':
+        selected_filters = {k: request.form.getlist(k) for k in request.form}
+        filtered_products = df.to_dict(orient='records')  # Convert DataFrame to a list of dictionaries
+
+        for key, values in selected_filters.items():
+            print('key: ',key)
+            print('values: ',values)
+            if values and 'All' not in values:
+                filtered_products = [product for product in filtered_products if product[key] in values]
+
+        print('filtered products: ',filtered_products)
 
     stat_list = [act_loung_num, inact_loung_num,vol_curr, vol_prev, len(active_clients), len(inactive_clients)]
 
-    return render_template('visual.html', data=data, clients=access_clients, stats=stat_list)
+    filters = {
+        CLName_Col: set(df[CLName_Col].unique()),
+        Lounge_ID_Col: set(df[Lounge_ID_Col].unique())
+    }
+    return render_template('visual.html', data=df, clients=access_clients, stats=stat_list, filters=filters)
+
+################################
+
+  
+    
 
 @app.route('/update_plot', methods=['POST'])
 def update_plot():
