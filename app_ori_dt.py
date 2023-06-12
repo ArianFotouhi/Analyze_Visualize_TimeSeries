@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, session, jsonify
 import pandas as pd
 from datetime import datetime, timedelta
+import pytz
 
 app = Flask(__name__)
 app.secret_key = "!241$gc"
@@ -87,9 +88,9 @@ def LoungeCounter(client_id):
 def stream_on_off(scale='sec', length=10):
     no_data = {}
     df = load_data()
-    unique_ids = df[CLName_Col].nunique()
-
-    for i in range(1, unique_ids+1):
+    # unique_ids = df[CLName_Col].nunique()
+    unique_ids = set(df[CLName_Col].unique())
+    for i in unique_ids:
         # Assuming the 'time' column is of type datetime
         df[Date_col] = pd.to_datetime(df[Date_col])
 
@@ -111,7 +112,7 @@ def stream_on_off(scale='sec', length=10):
         elif scale == 'day':
             time_diff = (datetime.now() - last_time) // timedelta(days=1)
             threshold = int(length)
-        elif scale == 'min':
+        elif scale == 'mo':
             time_diff = (datetime.now() - last_time) // timedelta(days=30)
             threshold = int(length)
         elif scale == 'year':
@@ -126,9 +127,7 @@ def stream_on_off(scale='sec', length=10):
 
     return no_data
 
-from datetime import datetime, timedelta
-import pytz
-import pandas as pd
+
 
 def get_latest_lounge_status(df, time_difference):
     current_date = datetime.now(pytz.UTC)
@@ -379,8 +378,9 @@ def update_plot():
     selected_client = request.form['client']
     df = load_data()
     
-    # no_data_dict = stream_on_off(scale='hour',length=1)
-    no_data_dict = {}
+    #scales: sec, min, hour, day, mo, year
+    no_data_dict = stream_on_off(scale='day',length=7)
+    # no_data_dict = {}
     if selected_client:
         filtered_df = filter_data(session["username"], df, selected_client, selected_client)
         lounge_num= LoungeCounter(str(selected_client))
