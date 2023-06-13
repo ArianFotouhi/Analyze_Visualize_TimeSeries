@@ -213,7 +213,7 @@ def get_lounge_status(date, time_difference):
 
 
 def active_inactive_lounges(clients):
-    time_difference=3 
+    time_difference=20
     date_format= '%Y-%m-%d'
     convert_option=None
     df = load_data()
@@ -358,7 +358,7 @@ def cl_lounges_dict(column):
 @app.route('/', methods=['GET'])
 def index():
     if 'username' in session:
-        return redirect('/visual')
+        return redirect('/home')
     return redirect('/login')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -368,15 +368,15 @@ def login():
         password = request.form['password']
         if authenticate(username, password):
             session["username"] = username
-            return redirect('/visual')
+            return redirect('/home')
         else:
             return render_template("login.html", error="Invalid username or password")
     return render_template("login.html")
 
 
 
-@app.route('/visual', methods=['GET','POST'])
-def visual():
+@app.route('/home', methods=['GET','POST'])
+def home():
     if 'username' not in session:
         return redirect('/login')
 
@@ -401,7 +401,7 @@ def visual():
     stat_list = [act_loung_num, inact_loung_num,vol_curr, vol_prev, len(active_clients), len(inactive_clients),inactive_lounges]
 
     print(active_clients)
-    return render_template('visual.html', data= data, clients= access_clients, stats= stat_list, cl_lounges_= cl_lounges_)
+    return render_template('index.html', data= data, clients= access_clients, stats= stat_list, cl_lounges_= cl_lounges_)
 
 ################################
 
