@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import pytz
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import to_date, lit, col,to_timestamp,sum,desc, datediff
+from pyspark.sql.functions import to_date, lit, col,to_timestamp,sum,desc, datediff, row_number
 from pyspark.sql.types import DateType
 
 
@@ -119,7 +119,7 @@ def stream_on_off(scale='sec', length=10):
             time_diff = (current_time - last_time).total_seconds() // 3600
             threshold = int(length)
         elif scale == 'day':
-            time_diff = datediff(current_date(), last_time)
+            time_diff = datediff(current_time, last_time)
             threshold = int(length)
         elif scale == 'mo':
             time_diff = (current_time.year - last_time.year) * 12 + (current_time.month - last_time.month)
@@ -137,38 +137,30 @@ def stream_on_off(scale='sec', length=10):
     return no_data
 
 
+from pyspark.sql.window import Window
+
 def get_latest_lounge_status(df, time_difference):
     current_date = datetime.now(pytz.UTC)
     latest_record = None
 
-    grouped_df = df.groupBy(CLName_Col, Lounge_ID_Col)
+    window_spec = Window.partitionBy(CLName_Col, Lounge_ID_Col).orderBy(col(Date_col).desc())
+    df = df.withColumn(Date_col, to_timestamp(col(Date_col), 'yyyy-MM-dd'))
 
-    group_keys = grouped_df.agg({"*": "count"}).collect()
+    grouped_df = df.withColumn("row_number", row_number().over(window_spec)).filter(col("row_number") == 1)
 
-    for group_key in group_keys:
-        cl_name = group_key[CLName_Col]
-        lounge_id = group_key[Lounge_ID_Col]
+    for row in grouped_df.collect():
+        latest_date = row[Date_col]
 
-        group_df = df.filter((col(CLName_Col) == cl_name) & (col(Lounge_ID_Col) == lounge_id))
-        group_df = group_df.withColumn(Date_col, to_timestamp(col(Date_col), 'yyyy-MM-dd'))
-        group_df = group_df.orderBy(col(Date_col).desc())  # Sort by date in descending order
-
-        latest_date_row = group_df.select(col(Date_col)).first()
-        if latest_date_row:
-            latest_date = latest_date_row[0]
-
-            # Ensure the latest date has the same timezone as current_date
-            if latest_date.tzinfo is None:
-                latest_date = pytz.UTC.localize(latest_date)
-            else:
-                latest_date = latest_date.astimezone(pytz.UTC)
-
-            if (current_date - latest_date).total_seconds() <= time_difference:
-                latest_record = group_df.first()
-                break
+        # Ensure the latest date has the same timezone as current_date
+        if latest_date.tzinfo is None:
+            latest_date = pytz.UTC.localize(latest_date)
+        else:
+            latest_date = latest_date.astimezone(pytz.UTC)
+        
+        latest_record = row
+        break
 
     return latest_record
-
 
 def convert_to_utc(date, time_difference, date_format, convert_option=None, local_timezone='EST', utc_timezone='UTC'):
     if convert_option is None:
@@ -228,10 +220,12 @@ def active_inactive_lounges(clients):
 
     for client_id in clients:
         client_df = filter_data_by_cl(session["username"], df, client_id, clients)
+
         active_lounge_ids = set()
         inactive_lounge_ids = set()
 
         latest_record = get_latest_lounge_status(client_df, time_difference)
+
         while latest_record is not None:
             lounge_id = latest_record[Lounge_ID_Col]
             received_date = latest_record[Date_col]
@@ -320,11 +314,10 @@ def cl_lounges_dict(column):
     if column =='lounges':
         username = session["username"]
         cl_list = users[username]["AccessCL"]
-        print('I am here:))))))))))))))')
+
         actives, inactives, _, _ = active_inactive_lounges(users[username]["AccessCL"])
 
-        print('active: ',actives)
-        print('inactive: ',inactives)
+
 
         output = {}
         for i in cl_list:
@@ -398,7 +391,6 @@ def home():
 
     stat_list = [act_loung_num, inact_loung_num,vol_curr, vol_prev, len(active_clients), len(inactive_clients),inactive_lounges]
 
-    print(active_clients)
     return render_template('index.html', data= data_dict, clients= access_clients, stats= stat_list, cl_lounges_= cl_lounges_)
 
 
@@ -417,10 +409,10 @@ def update_plot():
 
 
     #scales: sec, min, hour, day, mo, year
-    no_data_dict = stream_on_off(scale='day', length=7)
+    # no_data_dict = stream_on_off(scale='day', length=7)
 
     #to avoid strem monitoring
-    # no_data_dict = {}
+    no_data_dict = {}
 
     if selected_client or selected_lounge :
         active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients)
