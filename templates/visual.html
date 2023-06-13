@@ -6,73 +6,15 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://d3js.org/d3.v6.min.js"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        .plot {
-            width: 20%;
-            height: 350px;
-            display: inline-block;
-            position: relative;
-        }
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 
-        .plot.single {
-            width: 80%;
-            height: 500px;
-            margin: 10px;
-        }
-
-        .arrow {
-            position: absolute;
-            top: 30px;
-            right: 30px;
-            font-size: 14px;
-            text-align: center;
-            font-weight: bold;
-        }
-
-        .arrow .up-arrow {
-            color: green;
-        }
-
-        .arrow .down-arrow {
-            color: red;
-        }
-
-        .navbar {
-            margin-bottom: 0;
-        }
-
-        .navbar .navbar-nav {
-            margin-left: auto;
-        }
-
-        .navbar .navbar-nav .nav-item {
-            margin-right: 15px;
-        }
-
-        #charts-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-top: 20px;
-        }
-
-        .error-message {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: red;
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            0% { opacity: 1; }
-            50% { opacity: 0; }
-            100% { opacity: 1; }
-        }
-    </style>
 </head>
+
+
+
 <body>
+
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <a class="navbar-brand" href="">IEG Operations</a>
         <div class="navbar-collapse">
@@ -111,13 +53,15 @@
                 
             </li>
             <li class="nav-item">
-                <div class="col-auto">
+                    <a class="btn btn-primary" href="{{ url_for('dormant') }}">Dormant</a>
+            </li>
+            <li class="nav-item">
                     <button id="update-btn" type="button" class="btn btn-primary">Update</button>
-                </div>
             </li>
             <li class="nav-item">
                 <a class="btn btn-primary" href="{{ url_for('logout') }}">Logout</a>
             </li>
+            
         </ul>
     </nav>
 
@@ -128,7 +72,7 @@
                 <div class="card-body text-center">
                     <h5 class="card-title">Active Lounges</h5>
                     <h6 class="card-subtitle mb-2 text-muted">{{ stats[0] * 100 // (stats[0]+stats[1]) }}%</h6>
-                    <p class="card-text">{{ stats[0] }} / {{ stats[1] }}</p>
+                    <p class="card-text">{{ stats[0] }} / {{ (stats[0]+stats[1]) }}</p>
                 </div>
             </div>
         </div>
@@ -143,11 +87,14 @@
         </div>
         <div class="col-md-3">
             <div class="card" style="background-color: azure;">
+
                 <div class="card-body text-center">
                     <h5 class="card-title">Active Clients</h5>
                     <h6 class="card-subtitle mb-2 text-muted">{{ stats[4] * 100 // (stats[4]+stats[5]) }}%</h6>
-                    <p class="card-text">{{ stats[4] }} / {{ stats[5] }}</p>
+                    <p class="card-text">{{ stats[4] }}  / {{ (stats[4]+stats[5]) }}</p>
                 </div>
+  
+
             </div>
         </div>
     </div>
@@ -159,113 +106,7 @@
         <div id="charts-container" class="row"></div>
     </div>
 
-    <script type="text/javascript">
-        $(document).ready(function() {
-            function createGradientDefs(svg, gradientId, startColor, endColor) {
-                var gradient = svg.append("linearGradient")
-                    .attr("id", gradientId)
-                    .attr("gradientUnits", "userSpaceOnUse")
-                    .attr("x1", "0%")
-                    .attr("y1", "0%")
-                    .attr("x2", "0%")
-                    .attr("y2", "100%");
 
-                gradient.append("stop")
-                    .attr("offset", "0%")
-                    .attr("stop-color", startColor)
-                    .attr("stop-opacity", 1);
-
-                gradient.append("stop")
-                    .attr("offset", "100%")
-                    .attr("stop-color", endColor)
-                    .attr("stop-opacity", 1);
-            }
-
-            function updatePlot() {
-                var selectedClient = $('#client').val();
-                var selectedLounge = $('#lounge_name').val();
-
-
-                var currentDate = new Date();
-                var lastUpdate = currentDate.toLocaleString();
-                $('#last-update').text('Last Update: a few seconds ago at ' + lastUpdate);
-
-                $.ajax({
-                    url: '/update_plot',
-                    type: 'POST',
-                    data: { client: selectedClient, lounge_name: selectedLounge},
-
-                    success: function(response) {
-                        var traces = response.traces;
-                        var layouts = response.layouts;
-                        var errors = response.errors;
-
-                        var chartsContainer = $('#charts-container');
-                        chartsContainer.empty();
-
-                        for (var i = 0; i < traces.length; i++) {
-                            var chartId = 'chart-' + i;
-                            var chartDiv = $('<div>').attr('id', chartId).addClass('plot');
-                            if (selectedClient !== '' || selectedLounge !=='') {
-                                chartDiv.addClass('single');
-                            }
-                            chartsContainer.append(chartDiv);
-                            var data = [traces[i]];
-                            var layout = layouts[i];
-                            Plotly.newPlot(chartId, data, layout);
-
-                            var arrowDiv = $('<div>').addClass('arrow');
-                            var arrowIcon = '';
-
-                            if (errors[i]) {
-                                var errorMessageDiv = $('<div>').addClass('error-message').text(errors[i]);
-                                chartDiv.append(errorMessageDiv);
-                                chartDiv.css('position', 'relative');
-                                chartDiv.css('background-color', 'lightgray');
-                            } else {
-                                var lastRecord = data[0].y[data[0].y.length - 1];
-                                var prevRecord = data[0].y[data[0].y.length - 2];
-                                var growthPercentage = ((lastRecord - prevRecord) / prevRecord) * 100;
-
-                                if (growthPercentage > 0) {
-                                    arrowIcon = $('<i>').addClass('up-arrow').text('▲');
-                                    chartDiv.css('background-color', 'lightgreen');
-                                } else if (growthPercentage < 0) {
-                                    arrowIcon = $('<i>').addClass('down-arrow').text('▼');
-                                    chartDiv.css('background-color', 'red');
-                                }
-                                arrowDiv.append(arrowIcon);
-                                arrowDiv.append('<br>');
-                                arrowDiv.append(growthPercentage.toFixed(2) + '%');
-                            }
-
-                            chartDiv.append(arrowDiv);
-
-                            var chartElement = document.getElementById(chartId);
-                            var linePath = chartElement.getElementsByClassName('js-line');
-                            if (linePath.length > 0) {
-                                var svg = d3.select(linePath[0].parentNode);
-                                var gradientId = "gradient-" + i;
-                                createGradientDefs(svg, gradientId, "rgb(0, 255, 0)", "rgb(255, 0, 0)");
-                                linePath[0].style.stroke = "url(#" + gradientId + ")";
-                            }
-                        }
-                    }
-                });
-            }
-
-            function updateResults() {
-                updatePlot();
-            }
-
-            setInterval(updateResults, 60000);
-
-            $('#update-btn').on('click', function() {
-                updateResults();
-            });
-
-            updatePlot();
-        });
-    </script>
+    <script src="{{ url_for('static', filename='js/script_visual.js') }}"></script>
 </body>
 </html>
