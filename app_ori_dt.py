@@ -280,27 +280,40 @@ def volume_rate(clients, amount=5):
     rates = {}
     df = load_data()
     df[Date_col] = pd.to_datetime(df[Date_col])
+   
+   
+    volume_sum_x = 0
+    volume_sum_2x = 0
+    current_vol = 0
+    prev_vol = 0
     for client_id in clients:
-        client_df = df[df[CLName_Col] == client_id]  # Filter the DataFrame for the particular client
+        client_df = df[df[CLName_Col] == client_id]  # Filter the DataFrame for a particular client
         
-        volume_sum_x = 0
-        volume_sum_2x = 0
-        current_vol = 0
-        prev_vol = 0
+       
         
         latest_record = client_df.iloc[-1]  # Get the latest record for the client
         
         last_date = latest_record[Date_col]
         start_date_x = last_date - pd.DateOffset(days=amount)
         start_date_2x = last_date - pd.DateOffset(days=2 * amount)
+        
+        print('start datex',start_date_x)
+        print('start date 2x',start_date_2x)
 
         volume_sum_x = client_df[(client_df[Date_col] > start_date_x) & (client_df[Date_col] <= last_date)][Volume_ID_Col].sum()
         volume_sum_2x = client_df[(client_df[Date_col] > start_date_2x) & (client_df[Date_col] <= start_date_x)][Volume_ID_Col].sum()
         
-        current_vol = volume_sum_x
-        prev_vol = volume_sum_2x
+        print('volume sum x',volume_sum_x)
+        print('volume sum 2x',volume_sum_2x)
+        current_vol += volume_sum_x
+        prev_vol += volume_sum_2x
 
         rates[client_id] = [volume_sum_x, volume_sum_2x]
+        print('rates',rates,'\n')
+    
+
+            
+
 
     return rates, current_vol,  prev_vol
 
@@ -326,7 +339,6 @@ def cl_lounges_dict(column):
         for i in output:
             if i != '':
                 output[''].extend(output[i])
-        print('size: ', len(output['']))
 
 
         return output
@@ -384,7 +396,6 @@ def visual():
     # print('act/inact cli: ',active_clients, inactive_clients)
     volume_rates, vol_curr, vol_prev = volume_rate(access_clients, amount=7)
     cl_lounges_ = cl_lounges_dict('lounges')
-    print('cl_lounges: ',cl_lounges_)
     # print('volume rate: ',volume_rate)
 
     # if request.method == 'POST':
@@ -407,7 +418,6 @@ def visual():
     #     Date_col: set(accessed_df[Date_col].unique()),
 
     # }
-    print('GR: ',cl_lounges_)
     return render_template('visual.html', data= data, clients= access_clients, stats= stat_list, cl_lounges_= cl_lounges_)
 
 ################################
@@ -426,7 +436,6 @@ def update_plot():
     df = load_data()
 
 
-    print('selected_filters in ajax: ',selected_lounge ,selected_client)
     #scales: sec, min, hour, day, mo, year
     no_data_dict = stream_on_off(scale='day', length=7)
 
@@ -450,7 +459,6 @@ def update_plot():
             df = dropdown_menu_filter(df,Lounge_ID_Col ,selected_lounge)
            
             # modality can be 'lg' or'cl'
-            print('selected_client', selected_client)
             if selected_client == '':
                 lounge_num, selected_client  = LoungeCounter(name = str(selected_lounge), modality='lg')
                 
@@ -503,7 +511,6 @@ def update_plot():
             client_df = filter_data_by_cl(session["username"], df, client, access_clients)
             # lounge_num  = LoungeCounter(str(client))
 
-            print('client: ',client)
             if str(client) in active_lounges:
                 actives = len(active_lounges[str(client)])
             else:
