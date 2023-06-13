@@ -212,7 +212,10 @@ def get_lounge_status(date, time_difference):
         return 'inactive'
 
 
-def active_inactive_lounges(clients, time_difference, date_format, convert_option=None):
+def active_inactive_lounges(clients):
+    time_difference=3 
+    date_format= '%Y-%m-%d'
+    convert_option=None
     df = load_data()
     active_lounges = {}
     inactive_lounges = {}
@@ -323,7 +326,7 @@ def cl_lounges_dict(column):
         username = session["username"]
         cl_list = users[username]["AccessCL"]
         
-        actives, inactives, _, _ = active_inactive_lounges(users[username]["AccessCL"],time_difference=3, date_format='%Y-%m-%d')
+        actives, inactives, _, _ = active_inactive_lounges(users[username]["AccessCL"])
 
         
         output = {}
@@ -370,16 +373,14 @@ def login():
             return render_template("login.html", error="Invalid username or password")
     return render_template("login.html")
 
+
+
 @app.route('/visual', methods=['GET','POST'])
 def visual():
     if 'username' not in session:
         return redirect('/login')
 
     df = load_data()
-
-################################
-   
-    
 
     username = session["username"]
     access_clients = users[username]["AccessCL"]
@@ -388,36 +389,18 @@ def visual():
 
     data = accessed_df.to_dict(orient='records')
 
-    #finds the active lounges for the selected clients
+    
 
-    active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients,time_difference=3, date_format='%Y-%m-%d')
+    active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients)
     active_clients, inactive_clients = active_clients_percent(access_clients, active_lounges, inactive_lounges)
-    # print(active_lounges, inactive_lounges, act_loung_num, inact_loung_num)
-    # print('act/inact cli: ',active_clients, inactive_clients)
+
     volume_rates, vol_curr, vol_prev = volume_rate(access_clients, amount=7)
     cl_lounges_ = cl_lounges_dict('lounges')
-    # print('volume rate: ',volume_rate)
+  
 
-    # if request.method == 'POST':
-    #     selected_filters = {k: request.form.getlist(k) for k in request.form}
-    #     filtered_products = accessed_df.to_dict(orient='records')  # Convert DataFrame to a list of dictionaries
+    stat_list = [act_loung_num, inact_loung_num,vol_curr, vol_prev, len(active_clients), len(inactive_clients),inactive_lounges]
 
-    #     for key, values in selected_filters.items():
-    #         print('key: start', key,'end')
-    #         if values and 'All' not in values:
-    #             filtered_products = [product for product in filtered_products if product[key] in values]
-
-    #     print('filtered products: ',filtered_products)
-
-    stat_list = [act_loung_num, inact_loung_num,vol_curr, vol_prev, len(active_clients), len(inactive_clients)]
-
-    
-    # filters = {
-    #     CLName_Col: set(accessed_df[CLName_Col].unique()),
-    #     Lounge_ID_Col: set(accessed_df[Lounge_ID_Col].unique()),
-    #     Date_col: set(accessed_df[Date_col].unique()),
-
-    # }
+    print(active_clients)
     return render_template('visual.html', data= data, clients= access_clients, stats= stat_list, cl_lounges_= cl_lounges_)
 
 ################################
@@ -443,7 +426,7 @@ def update_plot():
     # no_data_dict = {}
 
     if selected_client or selected_lounge :
-        active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients,time_difference=3, date_format='%Y-%m-%d')
+        active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients)
 
         # lounge_num  = LoungeCounter(str(client))
 
@@ -504,7 +487,7 @@ def update_plot():
         errors = []
        
 
-        active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients,time_difference=3, date_format='%Y-%m-%d')
+        active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients)
 
 
         for client in access_clients:
@@ -549,6 +532,17 @@ def update_plot():
         
         return jsonify({'traces': traces, 'layouts': layouts , 'errors': errors})
 
+
+@app.route('/dormant', methods=['GET'])
+def dormant():
+    username = session["username"]
+    access_clients = users[username]["AccessCL"]
+    active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients)
+    active_clients, inactive_clients = active_clients_percent(access_clients, active_lounges, inactive_lounges)
+
+    stat_list = [inactive_clients,inactive_lounges]
+    
+    return render_template('dormant.html', clients= access_clients, stats= stat_list)
 
 
 
