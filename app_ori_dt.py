@@ -393,7 +393,6 @@ def home():
 
     active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients)
     active_clients, inactive_clients = active_clients_percent(access_clients, active_lounges, inactive_lounges)
-
     volume_rates, vol_curr, vol_prev = volume_rate(access_clients, amount=7)
     cl_lounges_ = cl_lounges_dict('lounges')
   
@@ -403,7 +402,6 @@ def home():
     print(active_clients)
     return render_template('index.html', data= data, clients= access_clients, stats= stat_list, cl_lounges_= cl_lounges_)
 
-################################
 
   
     
