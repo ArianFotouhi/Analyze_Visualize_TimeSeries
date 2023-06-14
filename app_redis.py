@@ -50,16 +50,19 @@ def authenticate(username, password):
         return True
     return False
 
+import io
 def load_data():
     cached_result = redis_client.get('func_result')
     if cached_result is not None:
         # Return the cached result
-        return pd.read_csv(cached_result)
+        cached_data = io.BytesIO(cached_result)
+        return pd.read_csv(cached_data)
 
     df = pd.read_csv("data/data.txt")
-    redis_client.set('func_result', df.to_csv(index=False))
+    redis_client.set('func_result', df.to_csv(index=False).encode('utf-8'))
     # df['Date'] = pd.to_datetime(df['Date'])
     return df
+
 
 
 
