@@ -26,9 +26,10 @@
 }
 
 .arrow {
-    position: absolute;
-    top: 30px;
-    right: 30px;
+    position: relative;
+    /* top: 0px; */
+    bottom: 290px;
+    left: 120px;
     font-size: 14px;
     text-align: center;
     font-weight: bold;
