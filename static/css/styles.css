@@ -17,7 +17,21 @@
     height: 350px;
     display: inline-block;
     position: relative;
+
+    border: 1px solid black;
+  
 }
+
+
+
+.plot-container.plotly{
+    border: 1px solid white;
+}
+
+.main-svg{ 
+    border: 1px solid black;
+}
+
 
 .plot.single {
     width: 80%;
@@ -59,7 +73,7 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
 .error-message {
