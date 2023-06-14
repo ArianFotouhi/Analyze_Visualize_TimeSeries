@@ -59,19 +59,21 @@ $(document).ready(function() {
                         var errorMessageDiv = $('<div>').addClass('error-message').text(errors[i]);
                         chartDiv.append(errorMessageDiv);
                         chartDiv.css('position', 'relative');
-                        chartDiv.css('background-color', 'lightgray');
-                    } else {
+                        chartDiv.css('background-color', 'white');
+
+                          
+                                            } else {
                         var lastRecord = data[0].y[data[0].y.length - 1];
                         var prevRecord = data[0].y[data[0].y.length - 2];
                         var growthPercentage = ((lastRecord - prevRecord) / prevRecord) * 100;
 
                         if (growthPercentage > 0) {
                             arrowIcon = $('<i>').addClass('up-arrow').text('▲');
-                            chartDiv.css('background-color', 'lightgreen');
-                        } else if (growthPercentage < 0) {
+                            chartDiv.css('background-color', 'white');
+                                                    } else if (growthPercentage < 0) {
                             arrowIcon = $('<i>').addClass('down-arrow').text('▼');
-                            chartDiv.css('background-color', 'red');
-                        }
+                            chartDiv.css('background-color', 'white');
+                                                    }
                         arrowDiv.append(arrowIcon);
                         arrowDiv.append('<br>');
                         arrowDiv.append(growthPercentage.toFixed(2) + '%');
@@ -102,5 +104,7 @@ $(document).ready(function() {
         updateResults();
     });
 
+    
     updatePlot();
+
 });
