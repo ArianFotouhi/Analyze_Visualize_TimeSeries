@@ -158,7 +158,7 @@ def get_latest_lounge_status(df, time_difference):
     latest_record = None
 
     for _, group_df in df.groupby([CLName_Col, Lounge_ID_Col]):
-        group_df[Date_col] = pd.to_datetime(group_df[Date_col], format='%Y-%m-%d %H:%M:%S')
+        group_df[Date_col] = pd.to_datetime(group_df[Date_col], format='%Y-%m-%d')
         group_df = group_df.sort_values(Date_col, ascending=False)  # Sort by date in descending order
         latest_date = group_df.iloc[0][Date_col]
 
@@ -562,4 +562,5 @@ def logout():
     return redirect('/login')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+#    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000)
