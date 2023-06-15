@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IEG Operations</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+
+
+
+    
+</head>
+
+
+
+<body>
+
+    <div class="row" style=" justify-content: center; ">
+        {% for client in clients %}
+        {% if client in stats[2]['open_to_accept'].keys() %}
+
+        <div class="card-wrapper">
+            <div class="card text-white bg-primary mb-3" style="max-width: 18rem;">
+                <div class="card-header">Sell More!😊</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{client}}</h5>
+                    
+                    <div class="container">
+                        
+                        {% set num_bullet_points = stats[2]['open_to_accept'][client]|length %}
+                        
+                        {% if 3 > num_bullet_points %}
+                        
+                        {% for component in stats[2]['open_to_accept'][client] %}
+                        <div class="row">
+                            <div class="col-md-12">
+                                <ul>
+                                    <li>{{component[0]}}</li>
+                                </ul>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        {% else %}
+                        <div class="container">
+                            {% for component in stats[2]['open_to_accept'][client][:2] %}
+                        <div class="row">
+                            <div class="col-md-12">
+                                <ul>
+                                    <li>{{component[0]}}</li>
+                                </ul>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse{{ client|replace(' ', '') }}" aria-expanded="false" aria-controls="collapse{{ client|replace(' ', '') }}"><strong style="color: antiquewhite;">More ...</strong></button>
+                        <div class="collapse" id="collapse{{ client|replace(' ', '') }}">
+                            
+                                {% for component in stats[2]['open_to_accept'][client][2:] %}
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <ul>
+                                            <li>{{ component[0] }}</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        {% endif %}
+
+
+                        
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    <div class="row" style=" justify-content: center; ">
+        {% for client in clients %}
+        {% if client in stats[2]['very_crowded'].keys() %}
+
+        <div class="card-wrapper">
+            <div class="card text-white bg-danger mb-3" style="max-width: 18rem;">
+                <div class="card-header">Very Crowded!😟</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{client}}</h5>
+                    
+                    <div class="container">
+                        
+                        {% set num_bullet_points = stats[2]['very_crowded'][client]|length %}
+                        
+                        {% if 3 > num_bullet_points %}
+                        
+                        {% for component in stats[2]['very_crowded'][client] %}
+                        <div class="row">
+                            <div class="col-md-12">
+                                <ul>
+                                    <li>{{component[0]}}</li>
+                                </ul>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        {% else %}
+                        <div class="container">
+                            {% for component in stats[2]['very_crowded'][client][:2] %}
+                        <div class="row">
+                            <div class="col-md-12">
+                                <ul>
+                                    <li>{{component[0]}}</li>
+                                </ul>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse{{ client|replace(' ', '') }}" aria-expanded="false" aria-controls="collapse{{ client|replace(' ', '') }}"><strong style="color: antiquewhite;">More ...</strong></button>
+                        <div class="collapse" id="collapse{{ client|replace(' ', '') }}">
+                            
+                                {% for component in stats[2]['very_crowded'][client][2:] %}
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <ul>
+                                            <li>{{ component[0] }}</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        {% endif %}
+
+
+                        
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+
+
+
+    
+
+  {{stats[2]}}
+</body>
+
+</html>    
