@@ -34,6 +34,7 @@ Date_col ='DATE_UTC'
 CLName_Col = 'CLIENT_NAME'
 Lounge_ID_Col = 'lounge_name'
 Volume_ID_Col = 'COUNT_PAX_ALLOWED'
+Refuse_Col='COUNT_PAX_REFUSED'
 Ratio_Col='REF2ALW'
 
 time_alert = 20
@@ -146,12 +147,12 @@ def stream_on_off(scale='sec', length=10):
 
 
 
-def get_latest_lounge_status(df, time_difference):
+def get_latest_lounge_status(df):
     current_date = datetime.now(pytz.UTC)
     latest_record = None
 
     for _, group_df in df.groupby([CLName_Col, Lounge_ID_Col]):
-        group_df[Date_col] = pd.to_datetime(group_df[Date_col], format='%Y-%m-%d %H:%M:%S')
+        group_df[Date_col] = pd.to_datetime(group_df[Date_col], format='%Y-%m-%d')
         group_df = group_df.sort_values(Date_col, ascending=False)  # Sort by date in descending order
         latest_date = group_df.iloc[0][Date_col]
 
@@ -232,7 +233,7 @@ def active_inactive_lounges(clients):
         active_lounge_ids = set()
         inactive_lounge_ids = set()
 
-        latest_record = get_latest_lounge_status(client_df, time_difference)
+        latest_record = get_latest_lounge_status(client_df)
         while latest_record is not None:
             lounge_id = latest_record[Lounge_ID_Col]
             received_date = latest_record[Date_col]
@@ -258,7 +259,7 @@ def active_inactive_lounges(clients):
 
             # Remove the latest record from the DataFrame
             client_df = client_df[client_df[Lounge_ID_Col] != lounge_id]
-            latest_record = get_latest_lounge_status(client_df, time_difference)
+            latest_record = get_latest_lounge_status(client_df)
 
         if active_lounge_ids:
             act_loung_num += len(active_lounge_ids)
@@ -352,19 +353,54 @@ def cl_lounges_dict(column):
         pass
 
 
-def lounge_crowdedness():
+def lounge_crowdedness(date='latest'):
     df = load_data()
-    num_categories = 10
+    username = session["username"]
+    access_clients = users[username]["AccessCL"]
 
+   
+    num_categories = 10
+    
     ranges = arr = np.linspace(min(df[Ratio_Col]), max(df[Ratio_Col]), num_categories)
 
-    very_crowded = df[df[Ratio_Col]>=0.5]
-    crowded = df[(df['REF2ALW'] < 0.5) & (df['REF2ALW'] >= 0.4)]
-    normal = df[(df['REF2ALW'] < 0.4) & (df['REF2ALW'] >= 0.2)]
-    uncrowded = df[(df['REF2ALW'] < 0.2) & (df['REF2ALW'] >= 0.1)]
-
+    rates = {'very_crowed':{}, 'crowded':{}, 'normal':{}, 'uncrowded':{}, 'open_to_accept':{}}
+    very_crowded_df = df[df[Ratio_Col]>=0.5]
+    crowded_df = df[(df[Ratio_Col] < 0.5) & (df[Ratio_Col] >= 0.4)]
+    normal_df = df[(df[Ratio_Col] < 0.4) & (df[Ratio_Col] >= 0.2)]
+    uncrowded_df = df[(df[Ratio_Col] < 0.2) & (df[Ratio_Col] >= 0.1)]
+    open_to_accept_df = df[df[Ratio_Col] == 0]
     
-    print(very_crowded[Lounge_ID_Col])
+    key_list = list(rates.keys())
+    for i,dataframe in enumerate([very_crowded_df, crowded_df, normal_df, uncrowded_df,open_to_accept_df]):
+        selected_key = key_list[i]
+
+        clients = dataframe[CLName_Col].unique()
+
+        for j in clients:
+            
+            if date =='latest':
+
+                client_df = filter_data_by_cl(session["username"], dataframe, j, access_clients)
+                # print('client_df',client_df)
+                latest_rec = get_latest_lounge_status(client_df)
+                latest_date= latest_rec[Date_col]
+                formatted_date = latest_date.strftime("%Y-%m-%d")
+
+
+            filtered_df = client_df[client_df[Date_col] == formatted_date]
+            # print(latest_rec)
+            # print(formatted_date)
+            # print('filtered_df',filtered_df)
+            rates[selected_key][j] = [filtered_df[Lounge_ID_Col].values,filtered_df[Volume_ID_Col].values, filtered_df[Refuse_Col].values, filtered_df[Ratio_Col].values]
+
+
+
+
+
+
+
+    for i in rates.keys():
+        print(f'rates {i}',rates[i])
 
 
 
