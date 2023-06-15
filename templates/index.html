@@ -74,12 +74,13 @@
 
             </li>
             <li class="nav-item">
-                <a class="btn btn-primary {% if stats[7]['open_to_accept'] != 0 or stats[7]['very_crowded'] != 0 %}blink{% endif %}" href="{{ url_for('intelligence_hub') }}">Data Intelligence Hub</a>
+                <a class="btn btn-primary {% if stats[7]['open_to_accept'] != 0 or stats[7]['very_crowded'] != 0 %}blink_inthub{% endif %}" href="{{ url_for('intelligence_hub') }}">Data Intelligence Hub</a>
             </li>
 
             <li class="nav-item">
-                <a class="btn btn-primary {% if stats[1] != 0 %}blink{% endif %}" href="{{ url_for('dormant') }}">Dormant</a>
+                <a class="btn btn-primary {% if stats[1] != 0 %}blink_dorm{% endif %}" href="{{ url_for('dormant') }}">Dormant</a>
             </li>
+            
         
             <li class="nav-item">
                     <button id="update-btn" type="button" class="btn btn-primary">Update</button>
@@ -141,7 +142,9 @@
 </div>
 
     <script src="{{ url_for('static', filename='js/script_visual.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/button_blink.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dormant_button_blink.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/int_hub_button_blink.js') }}"></script>
+
     <p>{{stats[7]}}</p>
 
 
