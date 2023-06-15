@@ -10,6 +10,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 
 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 
 
 
@@ -19,6 +23,7 @@
 
 
 <body>
+
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <h4 style="color: whitesmoke;">IEG Operations</h4> 
         <div class="navbar-collapse">
@@ -38,61 +43,207 @@
     </ul>
 </nav>
 
-    <h3 style="text-align: center;">Dormant Clients</h3>
-    {% if stats[0] %}
     <div class="row" style=" justify-content: center; ">
-    {% for client in stats[0] %}
-    
-        <div class="col-md-1">
-            <ul>
-                <li style="font-size: 2em;"><strong>{{client}}</strong></li>
-            </ul>
-        </div>
-    
-    {% endfor %}
-    </div>
-    {% else %}
-    <h4>All clients are active! 😊</h4>
-    {% endif %}
+        {% for client in clients %}
+        {% if client in stats[2]['open_to_accept'].keys() %}
 
-<hr>
-<h3 style="text-align: center;">Dormant Lounges</h3>
-
-    {% if stats[1] %}
-    <div class="row" style=" justify-content: center; ">
-        {% for client in stats[1] %}
         <div class="card-wrapper">
-            <div class="card text-white bg-dark mb-3" style="max-width: 18rem;">
-                <div class="card-header">Dormant Lounges</div>
+            <div class="card text-white bg-light-green mb-3" style="max-width: 18rem;">
+                <div class="card-header">Sell More!😊</div>
                 <div class="card-body">
                     <h5 class="card-title">{{client}}</h5>
                     
                     <div class="container">
-                        {% for component in stats[1][client] %}
-                        {% if loop.index0 % 3 == 0 %}
+                        
+                        {% set num_bullet_points = stats[2]['open_to_accept'][client]|length %}
+                        
+                        {% if 3 > num_bullet_points %}
+                        
+                        {% for component in stats[2]['open_to_accept'][client] %}
                         <div class="row">
-                        {% endif %}
                             <div class="col-md-12">
                                 <ul>
-                                    <li>{{component}}</li>
+                                    <li>{{component[0]}}</li>
                                 </ul>
                             </div>
-                        {% if loop.index % 3 == 0 or loop.last %}
                         </div>
-                        {% endif %}
                         {% endfor %}
+                        
+                        {% else %}
+                        <div class="container">
+                            {% for component in stats[2]['open_to_accept'][client][:2] %}
+                        <div class="row">
+                            <div class="col-md-12">
+                                <ul>
+                                    <li>{{component[0]}}</li>
+                                </ul>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse1_{{ client|replace(' ', '') }}" aria-expanded="false" aria-controls="collapse{{ client|replace(' ', '') }}" style="color: white;">More ...</button>
+                        <div class="collapse" id="collapse1_{{ client|replace(' ', '') }}">
+                            
+                                {% for component in stats[2]['open_to_accept'][client][2:] %}
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <ul>
+                                            <li>{{ component[0] }}</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        {% endif %}
+
+
+                        
+
                     </div>
 
                 </div>
             </div>
         </div>
+        {% endif %}
         {% endfor %}
     </div>
+
+    <div class="row" style=" justify-content: center; ">
+        {% for client in clients %}
+        {% if client in stats[2]['very_crowded'].keys() %}
+
+        <div class="card-wrapper">
+            <div class="card text-white bg-light-red mb-3" style="max-width: 18rem;">
+                <div class="card-header">Very Crowded!😟</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{client}}</h5>
+                    
+                    <div class="container">
+                        
+                        {% set num_bullet_points = stats[2]['very_crowded'][client]|length %}
+                        
+                        {% if 3 > num_bullet_points %}
+                        
+                        {% for component in stats[2]['very_crowded'][client] %}
+                        <div class="row">
+                            <div class="col-md-12">
+                                <ul>
+                                    <li>{{component[0]}}</li>
+                                </ul>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        {% else %}
+                        <div class="container">
+                            {% for component in stats[2]['very_crowded'][client][:2] %}
+                        <div class="row">
+                            <div class="col-md-12">
+                                <ul>
+                                    <li>{{component[0]}}</li>
+                                </ul>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse2_{{ client|replace(' ', '') }}" aria-expanded="false" aria-controls="collapse{{ client|replace(' ', '') }}" style="color: white;">More ...</button>
+                        <div class="collapse" id="collapse2_{{ client|replace(' ', '') }}">
+                            
+                                {% for component in stats[2]['very_crowded'][client][2:] %}
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <ul>
+                                            <li>{{ component[0] }}</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        {% endif %}
+
+
+                        
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+
+
+    <div class="row" style=" justify-content: center; ">
+        {% for client in clients %}
+        {% if client in stats[2]['crowded'].keys() %}
+
+        <div class="card-wrapper">
+            <div class="card text-black bg-light-yellow mb-3" style="max-width: 18rem;">
+                <div class="card-header">Crowded!🙁</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{client}}</h5>
+                    
+                    <div class="container">
+                        
+                        {% set num_bullet_points = stats[2]['crowded'][client]|length %}
+                        
+                        {% if 3 > num_bullet_points %}
+                        
+                        {% for component in stats[2]['crowded'][client] %}
+                        <div class="row">
+                            <div class="col-md-12">
+                                <ul>
+                                    <li>{{component[0]}}</li>
+                                </ul>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        {% else %}
+                        <div class="container">
+                            {% for component in stats[2]['crowded'][client][:2] %}
+                        <div class="row">
+                            <div class="col-md-12">
+                                <ul>
+                                    <li>{{component[0]}}</li>
+                                </ul>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse3_{{ client|replace(' ', '') }}" style="color: black;" aria-expanded="false" aria-controls="collapse{{ client|replace(' ', '') }}">More ...</button>
+                        <div class="collapse" id="collapse3_{{ client|replace(' ', '') }}">
+                            
+                                {% for component in stats[2]['crowded'][client][2:] %}
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <ul>
+                                            <li>{{ component[0] }}</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        {% endif %}
     
-    {% else %}
-    <h4>All lounges are active! 😊</h4>
-    {% endif %}
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
 
 </body>
 
-</html>
+</html>    
