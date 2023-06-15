@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, session, jsonify
 import pandas as pd
 from datetime import datetime, timedelta
 import pytz
+import numpy as np
 
 app = Flask(__name__)
 app.secret_key = "!241$gc"
@@ -33,6 +34,10 @@ Date_col ='DATE_UTC'
 CLName_Col = 'CLIENT_NAME'
 Lounge_ID_Col = 'lounge_name'
 Volume_ID_Col = 'COUNT_PAX_ALLOWED'
+Ratio_Col='REF2ALW'
+
+time_alert = 20
+
 users = {
     "admin": {"password": "admin", "ClientID": 'admin', 'AccessCL':['LH','LX','MAG']},
 
@@ -213,7 +218,7 @@ def get_lounge_status(date, time_difference):
 
 
 def active_inactive_lounges(clients):
-    time_difference=20
+    time_difference= time_alert
     date_format= '%Y-%m-%d'
     convert_option=None
     df = load_data()
@@ -300,19 +305,16 @@ def volume_rate(clients, amount=5):
         start_date_x = last_date - pd.DateOffset(days=amount)
         start_date_2x = last_date - pd.DateOffset(days=2 * amount)
         
-        print('start datex',start_date_x)
-        print('start date 2x',start_date_2x)
+
 
         volume_sum_x = client_df[(client_df[Date_col] > start_date_x) & (client_df[Date_col] <= last_date)][Volume_ID_Col].sum()
         volume_sum_2x = client_df[(client_df[Date_col] > start_date_2x) & (client_df[Date_col] <= start_date_x)][Volume_ID_Col].sum()
         
-        print('volume sum x',volume_sum_x)
-        print('volume sum 2x',volume_sum_2x)
+
         current_vol += volume_sum_x
         prev_vol += volume_sum_2x
 
         rates[client_id] = [volume_sum_x, volume_sum_2x]
-        print('rates',rates,'\n')
     
 
             
@@ -350,8 +352,19 @@ def cl_lounges_dict(column):
         pass
 
 
+def lounge_crowdedness():
+    df = load_data()
+    num_categories = 10
 
+    ranges = arr = np.linspace(min(df[Ratio_Col]), max(df[Ratio_Col]), num_categories)
 
+    very_crowded = df[df[Ratio_Col]>=0.5]
+    crowded = df[(df['REF2ALW'] < 0.5) & (df['REF2ALW'] >= 0.4)]
+    normal = df[(df['REF2ALW'] < 0.4) & (df['REF2ALW'] >= 0.2)]
+    uncrowded = df[(df['REF2ALW'] < 0.2) & (df['REF2ALW'] >= 0.1)]
+
+    
+    print(very_crowded[Lounge_ID_Col])
 
 
 
@@ -388,6 +401,7 @@ def home():
     accessed_df = filter_data_by_cl(session["username"], df, '', access_clients)
 
     data = accessed_df.to_dict(orient='records')
+    lounge_crowdedness()
 
     
 
@@ -399,7 +413,6 @@ def home():
 
     stat_list = [act_loung_num, inact_loung_num,vol_curr, vol_prev, len(active_clients), len(inactive_clients),inactive_lounges]
 
-    print(active_clients)
     return render_template('index.html', data= data, clients= access_clients, stats= stat_list, cl_lounges_= cl_lounges_)
 
 
@@ -418,7 +431,7 @@ def update_plot():
 
 
     #scales: sec, min, hour, day, mo, year
-    no_data_dict = stream_on_off(scale='day', length=7)
+    no_data_dict = stream_on_off(scale='day', length=time_alert)
 
     #to avoid strem monitoring
     # no_data_dict = {}
