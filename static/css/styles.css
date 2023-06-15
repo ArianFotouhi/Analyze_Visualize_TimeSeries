@@ -18,18 +18,33 @@
     display: inline-block;
     position: relative;
 
-    border: 1px solid black;
+
   
 }
 
 
-
-.plot-container.plotly{
-    border: 1px solid white;
+body {
+    background-color: white;
 }
 
+/* for intelligence_hub */
+.bg-light-yellow {
+    background-color: rgb(255, 255, 131);
+}
+.bg-light-red {
+    background-color: rgb(255, 44, 44);
+}
+.bg-light-green {
+    background-color: rgb(9, 66, 255);
+}
+/* for intelligence_hub */
+
+/* .plot-container.plotly{
+    border: 1px solid white;
+} */
+
 .main-svg{ 
-    border: 1px solid black;
+    border: 1px solid rgb(3, 173, 159);
 }
 
 
