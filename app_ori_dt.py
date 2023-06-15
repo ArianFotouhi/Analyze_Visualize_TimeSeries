@@ -363,7 +363,7 @@ def lounge_crowdedness(date='latest'):
     
     ranges = arr = np.linspace(min(df[Ratio_Col]), max(df[Ratio_Col]), num_categories)
 
-    rates = {'very_crowed':{}, 'crowded':{}, 'normal':{}, 'uncrowded':{}, 'open_to_accept':{}}
+    rates = {'very_crowded':{}, 'crowded':{}, 'normal':{}, 'uncrowded':{}, 'open_to_accept':{}}
     very_crowded_df = df[df[Ratio_Col]>=0.5]
     crowded_df = df[(df[Ratio_Col] < 0.5) & (df[Ratio_Col] >= 0.4)]
     normal_df = df[(df[Ratio_Col] < 0.4) & (df[Ratio_Col] >= 0.2)]
@@ -391,16 +391,14 @@ def lounge_crowdedness(date='latest'):
             # print(latest_rec)
             # print(formatted_date)
             # print('filtered_df',filtered_df)
-            rates[selected_key][j] = [filtered_df[Lounge_ID_Col].values,filtered_df[Volume_ID_Col].values, filtered_df[Refuse_Col].values, filtered_df[Ratio_Col].values]
+            if len(filtered_df[Lounge_ID_Col].values) != 0:
+                rates[selected_key][j] = []
+                for i in range(len(filtered_df[Lounge_ID_Col].values)):
+
+                    rates[selected_key][j].append([filtered_df[Lounge_ID_Col].values[i],filtered_df[Volume_ID_Col].values[i], filtered_df[Refuse_Col].values[i], filtered_df[Ratio_Col].values[i]])
 
 
-
-
-
-
-
-    for i in rates.keys():
-        print(f'rates {i}',rates[i])
+    return rates
 
 
 
@@ -437,7 +435,8 @@ def home():
     accessed_df = filter_data_by_cl(session["username"], df, '', access_clients)
 
     data = accessed_df.to_dict(orient='records')
-    lounge_crowdedness()
+    crowdedness = lounge_crowdedness()
+    print(crowdedness)
 
     
 
@@ -447,7 +446,7 @@ def home():
     cl_lounges_ = cl_lounges_dict('lounges')
   
 
-    stat_list = [act_loung_num, inact_loung_num,vol_curr, vol_prev, len(active_clients), len(inactive_clients),inactive_lounges]
+    stat_list = [act_loung_num, inact_loung_num,vol_curr, vol_prev, len(active_clients), len(inactive_clients),inactive_lounges, crowdedness]
 
     return render_template('index.html', data= data, clients= access_clients, stats= stat_list, cl_lounges_= cl_lounges_)
 
@@ -580,6 +579,21 @@ def update_plot():
         return jsonify({'traces': traces, 'layouts': layouts , 'errors': errors})
 
 
+@app.route('/intelligence_hub', methods=['GET'])
+def intelligence_hub():
+    username = session["username"]
+    access_clients = users[username]["AccessCL"]
+
+    active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients)
+    active_clients, inactive_clients = active_clients_percent(access_clients, active_lounges, inactive_lounges)
+    crowdedness = lounge_crowdedness()
+
+    stat_list = [inactive_clients,inactive_lounges,crowdedness]
+    
+    return render_template('intelligence_hub.html', clients= access_clients, stats= stat_list)
+
+
+
 @app.route('/dormant', methods=['GET'])
 def dormant():
     username = session["username"]
@@ -590,6 +604,7 @@ def dormant():
     stat_list = [inactive_clients,inactive_lounges]
     
     return render_template('dormant.html', clients= access_clients, stats= stat_list)
+
 
 
 
