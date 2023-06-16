@@ -54,7 +54,9 @@ def authenticate(username, password):
     return False
 
 def load_data():
-    df = pd.read_csv("data/data.txt")
+    # df = pd.read_csv("data/data.txt")
+    df = pd.read_csv("../../project1/Analyze_Visualize_TimeSeries/data/data.txt")
+
     # df['Date'] = pd.to_datetime(df['Date'])
     return df
 
