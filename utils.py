@@ -9,11 +9,6 @@ from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col, Refuse_Co
 
 
 
-def authenticate(username, password):
-    if username in users and users[username]["password"] == password:
-        return True
-    return False
-
 def load_data():
     # df = pd.read_csv("data/data.txt")
     df = pd.read_csv("../../project1/Analyze_Visualize_TimeSeries/data/data.txt")

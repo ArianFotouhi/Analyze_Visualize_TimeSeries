@@ -1,10 +1,11 @@
 from flask import Flask, render_template, request, redirect, session, jsonify
-from utils import authenticate, load_data, filter_data_by_cl, dropdown_menu_filter, LoungeCounter, stream_on_off, active_inactive_lounges, active_clients_percent, volume_rate, cl_lounges_dict, lounge_crowdedness, get_notifications
+from utils import load_data, filter_data_by_cl, dropdown_menu_filter, LoungeCounter, stream_on_off, active_inactive_lounges, active_clients_percent, volume_rate, cl_lounges_dict, lounge_crowdedness, get_notifications
 from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col,  users, time_alert
+from authentication import Authentication
 
+authenticate = Authentication().authenticate
 app = Flask(__name__)
 app.secret_key = "!241$gc"
-
 
 
 
