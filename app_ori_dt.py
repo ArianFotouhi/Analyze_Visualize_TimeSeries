@@ -403,9 +403,9 @@ def lounge_crowdedness(date='latest'):
 def get_notifications(inact_loung_num,inactive_clients,crowdedness):
     news=[]
     if inact_loung_num != 0:
-        news.append('You have inactive lounges')
+        news.append('You have inactive lounges😟')
     if inactive_clients:
-        news.append('You have no inactive clients')
+        news.append('You have no inactive clients😟')
     
     if 'open_to_accept' in crowdedness:
         if len(crowdedness['open_to_accept']) > 0:
@@ -449,7 +449,6 @@ def home():
 
     data = accessed_df.to_dict(orient='records')
     crowdedness = lounge_crowdedness()
-    # print(crowdedness)
 
     
 
@@ -457,7 +456,6 @@ def home():
     active_clients, inactive_clients = active_clients_percent(access_clients, active_lounges, inactive_lounges)
     volume_rates, vol_curr, vol_prev = volume_rate(access_clients, amount=7)
     cl_lounges_ = cl_lounges_dict('lounges')
-    print('inactive',inactive_clients)
     notifications = get_notifications(inact_loung_num,inactive_clients,crowdedness)
     
     stat_list = [act_loung_num, inact_loung_num,vol_curr, vol_prev, len(active_clients), len(inactive_clients),inactive_lounges, crowdedness, notifications]
