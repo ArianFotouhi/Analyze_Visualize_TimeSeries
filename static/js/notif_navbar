@@ -1,0 +1,15 @@
+$(document).ready(function() {
+
+        // Get the notification element
+        var notificationElement = document.getElementById("notification");
+      
+        // Change the notification every 2 seconds
+        setInterval(function() {
+          if (notificationElement.textContent === "You have inactive lounges") {
+            notificationElement.textContent = "You have inactive clients";
+          } else {
+            notificationElement.textContent = "You have inactive lounges";
+          }
+        }, 2000);
+
+    });

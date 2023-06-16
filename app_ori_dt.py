@@ -383,16 +383,14 @@ def lounge_crowdedness(date='latest'):
             if date =='latest':
 
                 client_df = filter_data_by_cl(session["username"], dataframe, j, access_clients)
-                # print('client_df',client_df)
+           
                 latest_rec = get_latest_lounge_status(client_df)
                 latest_date= latest_rec[Date_col]
                 formatted_date = latest_date.strftime("%Y-%m-%d")
 
 
             filtered_df = client_df[client_df[Date_col] == formatted_date]
-            # print(latest_rec)
-            # print(formatted_date)
-            # print('filtered_df',filtered_df)
+         
             if len(filtered_df[Lounge_ID_Col].values) != 0:
                 rates[selected_key][j] = []
                 for i in range(len(filtered_df[Lounge_ID_Col].values)):
@@ -402,7 +400,20 @@ def lounge_crowdedness(date='latest'):
 
     return rates
 
-
+def get_notifications(inact_loung_num,inactive_clients,crowdedness):
+    news=[]
+    if inact_loung_num != 0:
+        news.append('You have inactive lounges')
+    if inactive_clients:
+        news.append('You have no inactive clients')
+    
+    if 'open_to_accept' in crowdedness:
+        if len(crowdedness['open_to_accept']) > 0:
+            news.append('There are some uncrowded lounges to offer😃')
+    if 'very_crowded' in crowdedness:
+            if len(crowdedness['very_crowded']) > 0:
+                news.append('Some lounges are too crowded😟')
+    return news
 
 @app.route('/', methods=['GET'])
 def index():
@@ -438,7 +449,7 @@ def home():
 
     data = accessed_df.to_dict(orient='records')
     crowdedness = lounge_crowdedness()
-    print(crowdedness)
+    # print(crowdedness)
 
     
 
@@ -446,9 +457,10 @@ def home():
     active_clients, inactive_clients = active_clients_percent(access_clients, active_lounges, inactive_lounges)
     volume_rates, vol_curr, vol_prev = volume_rate(access_clients, amount=7)
     cl_lounges_ = cl_lounges_dict('lounges')
-  
+    print('inactive',inactive_clients)
+    notifications = get_notifications(inact_loung_num,inactive_clients,crowdedness)
     
-    stat_list = [act_loung_num, inact_loung_num,vol_curr, vol_prev, len(active_clients), len(inactive_clients),inactive_lounges, crowdedness]
+    stat_list = [act_loung_num, inact_loung_num,vol_curr, vol_prev, len(active_clients), len(inactive_clients),inactive_lounges, crowdedness, notifications]
 
     return render_template('index.html', data= data, clients= access_clients, stats= stat_list, cl_lounges_= cl_lounges_)
 
