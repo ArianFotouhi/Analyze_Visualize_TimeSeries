@@ -73,15 +73,16 @@ body {
 
 .navbar {
     margin-bottom: 0;
-}
-
-.navbar .navbar-nav {
+  }
+  
+  .navbar .navbar-nav {
     margin-left: auto;
-}
+  }
+  
+  .navbar .navbar-nav .nav-item {
+    margin-right: 2%; /* Adjust the margin as needed */
+  }
 
-.navbar .navbar-nav .nav-item {
-    margin-right: 15px;
-}
 
 #charts-container {
     display: flex;
@@ -98,6 +99,12 @@ body {
     color: red;
     animation: blink 1s infinite;
 }
+
+.smaller-button {
+    font-size: 12px; /* Adjust the font size as needed */
+    padding: 0.25rem 0.5rem; /* Adjust the padding as needed */
+  }
+  
 
 @keyframes blink {
     0% { opacity: 1; }

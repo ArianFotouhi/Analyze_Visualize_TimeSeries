@@ -1,25 +1,24 @@
-/* notification in navbar */
 .notification-container {
     position: relative;
-}
-
-#notification {
+  }
+  
+  #notification {
     position: absolute;
     top: 50%;
     left: 20%;
     transform: translate(-50%, -50%);
-    padding: 8px 12px;
+    padding: 0.6rem 1rem; /* Adjust the padding as needed */
     background-color: #ff5252; /* Set your desired background color */
     color: #ffffff; /* Set your desired text color */
-    border-radius: 20px;
-    font-size: 14px;
+    border-radius: 1rem; /* Adjust the border-radius as needed */
+    font-size: 0.8rem; /* Adjust the font-size as needed */
     border: 2px solid #000000; /* Set the border width and color */
     cursor: pointer;
-
+  
     /* Add any other styles you want */
-}
-
-#notification:hover::before {
+  }
+  
+  #notification:hover::before {
     content: 'For more info click on Data Intelligence Hub and Dormant';
     position: absolute;
     top: 30%;
@@ -27,20 +26,19 @@
     transform: translateX(-50%);
     background-color: rgba(0, 0, 0, 0.8);
     color: #ffffff;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
+    padding: 0.4rem 0.8rem; /* Adjust the padding as needed */
+    border-radius: 0.2rem; /* Adjust the border-radius as needed */
+    font-size: 0.6rem; /* Adjust the font-size as needed */
     visibility: hidden;
     opacity: 0;
     transition: visibility 0s, opacity 0.3s;
-}
-
-#notificationText {
+  }
+  
+  #notificationText {
     animation: fade 1s infinite;
-}
-#notification:hover::before {
+  }
+  
+  #notification:hover::before {
     visibility: visible;
     opacity: 1;
-}
-
-/* notification in navbar */
+  }
