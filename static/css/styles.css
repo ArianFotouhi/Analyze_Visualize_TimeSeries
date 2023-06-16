@@ -12,6 +12,19 @@
 /* for dormant.html */
 
 
+/* for intelligence_hub */
+.bg-light-yellow {
+    background-color: rgb(255, 255, 131);
+}
+.bg-light-red {
+    background-color: rgb(255, 44, 44);
+}
+.bg-light-green {
+    background-color: rgb(9, 66, 255);
+}
+/* for intelligence_hub */
+
+
 .plot {
     width: 20%;
     height: 350px;
@@ -27,21 +40,7 @@ body {
     background-color: white;
 }
 
-/* for intelligence_hub */
-.bg-light-yellow {
-    background-color: rgb(255, 255, 131);
-}
-.bg-light-red {
-    background-color: rgb(255, 44, 44);
-}
-.bg-light-green {
-    background-color: rgb(9, 66, 255);
-}
-/* for intelligence_hub */
 
-/* .plot-container.plotly{
-    border: 1px solid white;
-} */
 
 .main-svg{ 
     border: 1px solid rgb(3, 173, 159);
@@ -106,51 +105,3 @@ body {
     100% { opacity: 1; }
 }
 
-
-
-/* notification in navbar */
-.notification-container {
-    position: relative;
-}
-
-#notification {
-    position: absolute;
-    top: 50%;
-    left: 20%;
-    transform: translate(-50%, -50%);
-    padding: 8px 12px;
-    background-color: #ff5252; /* Set your desired background color */
-    color: #ffffff; /* Set your desired text color */
-    border-radius: 20px;
-    font-size: 14px;
-    border: 2px solid #000000; /* Set the border width and color */
-    cursor: pointer;
-
-    /* Add any other styles you want */
-}
-
-#notification:hover::before {
-    content: 'For more info click on Data Intelligence Hub and Dormant';
-    position: absolute;
-    top: 30%;
-    left: 0%;
-    transform: translateX(-50%);
-    background-color: rgba(0, 0, 0, 0.8);
-    color: #ffffff;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    visibility: hidden;
-    opacity: 0;
-    transition: visibility 0s, opacity 0.3s;
-}
-
-#notificationText {
-    animation: fade 1s infinite;
-}
-#notification:hover::before {
-    visibility: visible;
-    opacity: 1;
-}
-
-/* notification in navbar */
