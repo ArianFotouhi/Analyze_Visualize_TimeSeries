@@ -459,8 +459,11 @@ def home():
     cl_lounges_ = cl_lounges_dict('lounges')
     notifications = get_notifications(inact_loung_num,inactive_clients,crowdedness)
     
+    
+
     stat_list = [act_loung_num, inact_loung_num,vol_curr, vol_prev, len(active_clients), len(inactive_clients),inactive_lounges, crowdedness, notifications]
 
+    
     return render_template('index.html', data= data, clients= access_clients, stats= stat_list, cl_lounges_= cl_lounges_)
 
 
