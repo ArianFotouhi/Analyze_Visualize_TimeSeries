@@ -356,14 +356,15 @@ def cl_lounges_dict(column):
 
 
 def lounge_crowdedness(date='latest'):
-    df = load_data()
+    num_categories = 10
+
     username = session["username"]
     access_clients = users[username]["AccessCL"]
-
-   
-    num_categories = 10
-    
-    ranges = arr = np.linspace(min(df[Ratio_Col]), max(df[Ratio_Col]), num_categories)
+    print('access_clients',access_clients)
+    df = load_data()
+    print('df',df)
+    df  = filter_data_by_cl(session["username"], df, '', access_clients)
+    print('df',df)
 
     rates = {'very_crowded':{}, 'crowded':{}, 'normal':{}, 'uncrowded':{}, 'open_to_accept':{}}
     very_crowded_df = df[df[Ratio_Col]>=0.5]
