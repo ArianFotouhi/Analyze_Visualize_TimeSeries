@@ -11,9 +11,9 @@ from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col, Refuse_Co
 
 def load_data():
     # df = pd.read_csv("data/data.txt")
-    df = pd.read_csv("../../project1/Analyze_Visualize_TimeSeries/data/data.txt")
+    # df = pd.read_csv("data.txt")
 
-    # df['Date'] = pd.to_datetime(df['Date'])
+    df = pd.read_csv('data_.txt')
     return df
 
 
@@ -183,6 +183,7 @@ def active_inactive_lounges(clients):
 
     for client_id in clients:
         client_df = filter_data_by_cl(session["username"], df, client_id, clients)
+
         active_lounge_ids = set()
         inactive_lounge_ids = set()
 
@@ -311,11 +312,10 @@ def lounge_crowdedness(date='latest'):
 
     username = session["username"]
     access_clients = users[username]["AccessCL"]
-    print('access_clients',access_clients)
+    # print('access_clients',access_clients)
     df = load_data()
-    print('df',df)
+
     df  = filter_data_by_cl(session["username"], df, '', access_clients)
-    print('df',df)
 
     rates = {'very_crowded':{}, 'crowded':{}, 'normal':{}, 'uncrowded':{}, 'open_to_accept':{}}
     very_crowded_df = df[df[Ratio_Col]>=0.5]
