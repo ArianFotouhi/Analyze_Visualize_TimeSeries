@@ -71,6 +71,8 @@ def home():
 def update_plot():
     selected_client = request.form['client']
     selected_lounge = request.form['lounge_name']
+    selected_airport = request.form['airport_name']
+
    
     username = session["username"]
     access_clients = users[username]["AccessCL"]
@@ -84,13 +86,13 @@ def update_plot():
     #to avoid strem monitoring
     # no_data_dict = {}
 
-    if selected_client or selected_lounge :
+    if selected_client or selected_lounge or selected_airport:
         active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients)
 
         # lounge_num  = LoungeCounter(str(client))
 
                 
-      
+        airport_num = 0
 
         if selected_client:
             df = dropdown_menu_filter(df,CLName_Col ,selected_client)
@@ -106,7 +108,9 @@ def update_plot():
             if selected_client == '':
                 lounge_num, selected_client  = LoungeCounter(name = str(selected_lounge), modality='lg')
                 airport_list, airport_num = ParameterCounter(name = selected_client, base= CLName_Col, to_be_counted= Airport_Name_Col)
-
+        
+        if selected_airport:
+            df = dropdown_menu_filter(df,Airport_Name_Col, selected_airport)
                 
         
         if selected_client in active_lounges:
@@ -131,7 +135,7 @@ def update_plot():
         }
 
         layout = {
-            'title': f'CL {selected_client} Active Lounge {actives}/{ actives + inactives}, AP NO. {airport_num}',
+            'title': f'{selected_client} {selected_lounge} {selected_airport}',
             'xaxis': {'title': 'Date'},
             'yaxis': {'title': 'Rate'}
         }
