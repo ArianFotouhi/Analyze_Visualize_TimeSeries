@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, session, jsonify
-from utils import load_data, filter_data_by_cl, dropdown_menu_filter, LoungeCounter, stream_on_off, active_inactive_lounges, active_clients_percent, volume_rate, cl_lounges_dict, lounge_crowdedness, get_notifications
-from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col,  users, time_alert
+from utils import load_data, filter_data_by_cl, dropdown_menu_filter, LoungeCounter, stream_on_off, active_inactive_lounges, active_clients_percent, volume_rate, cl_lounges_dict, lounge_crowdedness, get_notifications, ParameterCounter
+from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col,  users, time_alert, Airport_Name_Col
 from authentication import Authentication
 
 authenticate = Authentication().authenticate
@@ -99,7 +99,7 @@ def update_plot():
             # modality can be 'lg' or'cl'
             if selected_client == '':
                 lounge_num, selected_client  = LoungeCounter(name = str(selected_lounge), modality='lg')
-                
+                airport_list, airport_num = ParameterCounter(name = selected_client, base= CLName_Col, to_be_counted= Airport_Name_Col)
         
         if selected_client in active_lounges:
                 actives = len(active_lounges[selected_client])
@@ -123,7 +123,7 @@ def update_plot():
         }
 
         layout = {
-            'title': f'CL {selected_client} Active Lounge {actives}/{ actives + inactives}',
+            'title': f'CL {selected_client} Active Lounge {actives}/{ actives + inactives}, Airport No. {airport_num}',
             'xaxis': {'title': 'Date'},
             'yaxis': {'title': 'Rate'}
         }
@@ -168,9 +168,10 @@ def update_plot():
                 'name': f'Time Series'
             }
             traces.append(trace)
+            airport_list, airport_num = ParameterCounter(name = client, base= CLName_Col, to_be_counted= Airport_Name_Col)
 
             layout = {
-                'title': f'{client} Active Lounge {actives}/{ actives + inactives}',
+                'title': f'{client} Active Lounge {actives}/{ actives + inactives}, Airport No. {airport_num}',
                 'xaxis': {'title': 'Date'},
                 'yaxis': {'title': 'Rate'}
             }

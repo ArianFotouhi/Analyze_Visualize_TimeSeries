@@ -54,6 +54,13 @@ def LoungeCounter(name, modality='cl'):
         unique_count = LoungeCounter(name=cl)
         return unique_count, cl
 
+def ParameterCounter(name,base, to_be_counted):
+    df = load_data()
+    
+    unique_vals = df.loc[df[base] == name, to_be_counted].unique()
+    unique_count = len(unique_vals)
+    return unique_vals, unique_count
+  
 
 
 def stream_on_off(scale='sec', length=10):

@@ -2,6 +2,7 @@ Date_col ='Date_Local'
 CLName_Col = 'CLIENT_NAME'
 Lounge_ID_Col = 'Lounge_name'
 Volume_ID_Col = 'PAX_Accept'
+Airport_Name_Col = 'Airport_Code'
 Refuse_Col='PAX_Reject'
 Ratio_Col='REF2ALW'
 
