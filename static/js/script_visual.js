@@ -24,6 +24,9 @@ $(document).ready(function() {
         var selectedLounge = $('#lounge_name').val();
         var selectedAirport = $('#airport_name').val();
 
+        var selectedCity = $('#city_name').val();
+        var selectedCountry = $('#country_name').val();
+
 
         var currentDate = new Date();
         var lastUpdate = currentDate.toLocaleString();
@@ -32,7 +35,7 @@ $(document).ready(function() {
         $.ajax({
             url: '/update_plot',
             type: 'POST',
-            data: { client: selectedClient, lounge_name: selectedLounge, airport_name: selectedAirport},
+            data: { client: selectedClient, lounge_name: selectedLounge, airport_name: selectedAirport, city_name: selectedCity, country_name: selectedCountry},
 
             success: function(response) {
                 var traces = response.traces;
@@ -45,7 +48,7 @@ $(document).ready(function() {
                 for (var i = 0; i < traces.length; i++) {
                     var chartId = 'chart-' + i;
                     var chartDiv = $('<div>').attr('id', chartId).addClass('plot');
-                    if (selectedClient !== '' || selectedLounge !=='' || selectedAirport!== '') {
+                    if (selectedClient !== '' || selectedLounge !=='' || selectedAirport!== '' || selectedCity!== '' || selectedCountry!== '') {
                         chartDiv.addClass('single');
                     }
                     chartsContainer.append(chartDiv);
