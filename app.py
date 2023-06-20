@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, session, jsonify
-from utils import load_data, filter_data_by_cl, dropdown_menu_filter, LoungeCounter, stream_on_off, active_inactive_lounges, active_clients_percent, volume_rate, cl_lounges_dict, lounge_crowdedness, get_notifications, ParameterCounter
+from utils import load_data, filter_data_by_cl, dropdown_menu_filter, LoungeCounter, stream_on_off, active_inactive_lounges, active_clients_percent, volume_rate, filter_unique_val_dict, lounge_crowdedness, get_notifications, ParameterCounter
 from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col,  users, time_alert, crowdedness_alert, Airport_Name_Col, Time_col
 from authentication import Authentication
 
@@ -49,7 +49,11 @@ def home():
     active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients)
     active_clients, inactive_clients = active_clients_percent(access_clients, active_lounges, inactive_lounges)
     volume_rates, vol_curr, vol_prev = volume_rate(access_clients, amount=7)
-    cl_lounges_ = cl_lounges_dict('lounges')
+    cl_lounges_ = filter_unique_val_dict('lounges')
+    airport_uq_list = filter_unique_val_dict('airport')
+    print('airport_uq_list', airport_uq_list)
+    print('cl_lounges_', cl_lounges_)
+    print('client',access_clients)
     notifications = get_notifications(inact_loung_num,inactive_clients,crowdedness)
     
     
@@ -57,7 +61,7 @@ def home():
     stat_list = [act_loung_num, inact_loung_num,vol_curr, vol_prev, len(active_clients), len(inactive_clients),inactive_lounges, crowdedness, notifications]
 
     
-    return render_template('index.html', data= data, clients= access_clients, stats= stat_list, cl_lounges_= cl_lounges_)
+    return render_template('index.html', data= data, clients= access_clients, stats= stat_list, cl_lounges_= cl_lounges_, airports = airport_uq_list)
 
 
   
@@ -90,6 +94,8 @@ def update_plot():
 
         if selected_client:
             df = dropdown_menu_filter(df,CLName_Col ,selected_client)
+            airport_list, airport_num = ParameterCounter(name = selected_client, base= CLName_Col, to_be_counted= Airport_Name_Col)
+
             # lounge_num = LoungeCounter(name = str(selected_client))
             
 
@@ -100,6 +106,8 @@ def update_plot():
             if selected_client == '':
                 lounge_num, selected_client  = LoungeCounter(name = str(selected_lounge), modality='lg')
                 airport_list, airport_num = ParameterCounter(name = selected_client, base= CLName_Col, to_be_counted= Airport_Name_Col)
+
+                
         
         if selected_client in active_lounges:
                 actives = len(active_lounges[selected_client])
@@ -123,7 +131,7 @@ def update_plot():
         }
 
         layout = {
-            'title': f'CL {selected_client} Active Lounge {actives}/{ actives + inactives}, Airport No. {airport_num}',
+            'title': f'CL {selected_client} Active Lounge {actives}/{ actives + inactives}, AP NO. {airport_num}',
             'xaxis': {'title': 'Date'},
             'yaxis': {'title': 'Rate'}
         }
@@ -157,7 +165,8 @@ def update_plot():
                 inactives = len(inactive_lounges[str(client)])
             else:
                 inactives = 0
-          
+            airport_list, airport_num = ParameterCounter(name = client, base= CLName_Col, to_be_counted= Airport_Name_Col)
+
             trace = {
                 'x': client_df[Date_col].unique().tolist(),
                 'y': client_df.groupby(Date_col)[Volume_ID_Col].sum().to_list(),
@@ -168,12 +177,9 @@ def update_plot():
                 'name': f'Time Series'
             }
             traces.append(trace)
-            airport_list, airport_num = ParameterCounter(name = client, base= CLName_Col, to_be_counted= Airport_Name_Col)
 
             layout = {
                 'title': f'{client} Active Lounge {actives}/{ actives + inactives}, AP No. {airport_num}',
-                'font': {
-                        'size': 8 },
                 'xaxis': {'title': 'Date'},
                 'yaxis': {'title': 'Rate'}
             }
@@ -189,6 +195,7 @@ def update_plot():
         
         
         return jsonify({'traces': traces, 'layouts': layouts , 'errors': errors})
+
 
 
 @app.route('/intelligence_hub', methods=['GET'])
