@@ -3,7 +3,7 @@ from flask import session
 
 from datetime import datetime, timedelta
 import pytz
-from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col, Refuse_Col, Ratio_Col, users, time_alert, crowdedness_alert, Time_col, Airport_Name_Col
+from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col, Refuse_Col, Ratio_Col, users, time_alert, crowdedness_alert, Airport_Name_Col, City_Name_Col, Country_Name_Col
 
 
 
@@ -194,7 +194,8 @@ def active_inactive_lounges(clients):
 
         active_lounge_ids = set()
         inactive_lounge_ids = set()
-
+        
+        
         latest_record = get_latest_lounge_status(client_df)
         while latest_record is not None:
             lounge_id = latest_record[Lounge_ID_Col]
@@ -308,7 +309,6 @@ def filter_unique_val_dict(column):
             if i != '':
                 output[''].extend(output[i])
 
-
         return output
     
     elif column == 'airport':
@@ -316,6 +316,19 @@ def filter_unique_val_dict(column):
         unqiue_vals = df[Airport_Name_Col].unique()
         
         return unqiue_vals
+    
+    elif column == 'city':
+        df = load_data()
+        unqiue_vals = df[City_Name_Col].unique()
+        
+        return unqiue_vals
+    
+    elif column == 'country':
+        df = load_data()
+        unqiue_vals = df[Country_Name_Col].unique()
+    
+        return unqiue_vals
+
 
 
 def lounge_crowdedness(date='latest', alert=crowdedness_alert):
@@ -345,7 +358,7 @@ def lounge_crowdedness(date='latest', alert=crowdedness_alert):
             if date =='latest':
                 
                 client_df = filter_data_by_cl(session["username"], dataframe, j, access_clients)
-                # print( key_list[i], client_df)
+                # print( 'PRINTED INFO: ',key_list[i], client_df)
                 latest_date = get_latest_date_time(client_df)
                 
             print('latest_date',latest_date)
@@ -375,7 +388,7 @@ def get_notifications(inact_loung_num,inactive_clients,crowdedness):
             news.append('There are some uncrowded lounges to offer😃')
     if 'very_crowded' in crowdedness:
             if len(crowdedness['very_crowded']) > 0:
-                news.append('Some lounges are too crowded😟')
+                news.append('There exists chosen by many lounges🤔')
     return news
 
 def get_latest_date_time(df):
