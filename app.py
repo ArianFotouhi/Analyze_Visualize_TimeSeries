@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, session, jsonify
 from utils import load_data, filter_data_by_cl, dropdown_menu_filter, LoungeCounter, stream_on_off, active_inactive_lounges, active_clients_percent, volume_rate, cl_lounges_dict, lounge_crowdedness, get_notifications, ParameterCounter
-from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col,  users, time_alert, Airport_Name_Col
+from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col,  users, time_alert, crowdedness_alert, Airport_Name_Col, Time_col
 from authentication import Authentication
 
 authenticate = Authentication().authenticate
@@ -42,7 +42,7 @@ def home():
     accessed_df = filter_data_by_cl(session["username"], df, '', access_clients)
 
     data = accessed_df.to_dict(orient='records')
-    crowdedness = lounge_crowdedness()
+    crowdedness = lounge_crowdedness(date='latest', alert = crowdedness_alert)
 
     
 
@@ -198,7 +198,7 @@ def intelligence_hub():
 
     active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients)
     active_clients, inactive_clients = active_clients_percent(access_clients, active_lounges, inactive_lounges)
-    crowdedness = lounge_crowdedness()
+    crowdedness = lounge_crowdedness(date='latest',alert = crowdedness_alert)
 
     stat_list = [inactive_clients,inactive_lounges,crowdedness]
     
