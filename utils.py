@@ -113,7 +113,6 @@ def get_latest_lounge_status(df):
 
     for _, group_df in df.groupby([CLName_Col, Lounge_ID_Col]):
         group_df[Date_col] = pd.to_datetime(group_df[Date_col], format='%Y-%m-%d %H:%M:%S')
-        group_df[Time_col] = pd.to_datetime(group_df[Time_col], format='%H:%M:%S')
 
         group_df = group_df.sort_values(Date_col, ascending=False)  # Sort by date in descending order
         latest_date = group_df.iloc[0][Date_col]
@@ -182,7 +181,7 @@ def get_lounge_status(date, time_difference):
 
 def active_inactive_lounges(clients):
     time_difference= time_alert
-    date_format= '%Y-%m-%d'
+    date_format= '%Y-%m-%d %H:%M:%S'
     convert_option=None
     df = load_data()
     active_lounges = {}
@@ -287,7 +286,7 @@ def volume_rate(clients, amount=5):
     return rates, current_vol,  prev_vol
 
 
-def cl_lounges_dict(column):
+def filter_unique_val_dict(column):
     if column =='lounges':
         username = session["username"]
         cl_list = users[username]["AccessCL"]
@@ -313,7 +312,10 @@ def cl_lounges_dict(column):
         return output
     
     elif column == 'airport':
-        pass
+        df = load_data()
+        unqiue_vals = df[Airport_Name_Col].unique()
+        
+        return unqiue_vals
 
 
 def lounge_crowdedness(date='latest', alert=crowdedness_alert):
