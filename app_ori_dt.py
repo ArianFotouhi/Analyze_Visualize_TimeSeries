@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, session, jsonify
 import pandas as pd
 from datetime import datetime, timedelta
 import pytz
+import numpy as np
 
 app = Flask(__name__)
 app.secret_key = "!241$gc"
@@ -33,6 +34,11 @@ Date_col ='DATE_UTC'
 CLName_Col = 'CLIENT_NAME'
 Lounge_ID_Col = 'lounge_name'
 Volume_ID_Col = 'COUNT_PAX_ALLOWED'
+Refuse_Col='COUNT_PAX_REFUSED'
+Ratio_Col='REF2ALW'
+
+time_alert = 20
+
 users = {
     "admin": {"password": "admin", "ClientID": 'admin', 'AccessCL':['LH','LX','MAG']},
 
@@ -48,7 +54,9 @@ def authenticate(username, password):
     return False
 
 def load_data():
-    df = pd.read_csv("data/data.txt")
+    # df = pd.read_csv("data/data.txt")
+    df = pd.read_csv("data.txt")
+
     # df['Date'] = pd.to_datetime(df['Date'])
     return df
 
@@ -141,12 +149,12 @@ def stream_on_off(scale='sec', length=10):
 
 
 
-def get_latest_lounge_status(df, time_difference):
+def get_latest_lounge_status(df):
     current_date = datetime.now(pytz.UTC)
     latest_record = None
 
     for _, group_df in df.groupby([CLName_Col, Lounge_ID_Col]):
-        group_df[Date_col] = pd.to_datetime(group_df[Date_col], format='%Y-%m-%d %H:%M:%S')
+        group_df[Date_col] = pd.to_datetime(group_df[Date_col], format='%Y-%m-%d')
         group_df = group_df.sort_values(Date_col, ascending=False)  # Sort by date in descending order
         latest_date = group_df.iloc[0][Date_col]
 
@@ -213,7 +221,7 @@ def get_lounge_status(date, time_difference):
 
 
 def active_inactive_lounges(clients):
-    time_difference=20
+    time_difference= time_alert
     date_format= '%Y-%m-%d'
     convert_option=None
     df = load_data()
@@ -227,7 +235,7 @@ def active_inactive_lounges(clients):
         active_lounge_ids = set()
         inactive_lounge_ids = set()
 
-        latest_record = get_latest_lounge_status(client_df, time_difference)
+        latest_record = get_latest_lounge_status(client_df)
         while latest_record is not None:
             lounge_id = latest_record[Lounge_ID_Col]
             received_date = latest_record[Date_col]
@@ -253,7 +261,7 @@ def active_inactive_lounges(clients):
 
             # Remove the latest record from the DataFrame
             client_df = client_df[client_df[Lounge_ID_Col] != lounge_id]
-            latest_record = get_latest_lounge_status(client_df, time_difference)
+            latest_record = get_latest_lounge_status(client_df)
 
         if active_lounge_ids:
             act_loung_num += len(active_lounge_ids)
@@ -300,19 +308,16 @@ def volume_rate(clients, amount=5):
         start_date_x = last_date - pd.DateOffset(days=amount)
         start_date_2x = last_date - pd.DateOffset(days=2 * amount)
         
-        print('start datex',start_date_x)
-        print('start date 2x',start_date_2x)
+
 
         volume_sum_x = client_df[(client_df[Date_col] > start_date_x) & (client_df[Date_col] <= last_date)][Volume_ID_Col].sum()
         volume_sum_2x = client_df[(client_df[Date_col] > start_date_2x) & (client_df[Date_col] <= start_date_x)][Volume_ID_Col].sum()
         
-        print('volume sum x',volume_sum_x)
-        print('volume sum 2x',volume_sum_2x)
+
         current_vol += volume_sum_x
         prev_vol += volume_sum_2x
 
         rates[client_id] = [volume_sum_x, volume_sum_2x]
-        print('rates',rates,'\n')
     
 
             
@@ -350,10 +355,66 @@ def cl_lounges_dict(column):
         pass
 
 
+def lounge_crowdedness(date='latest'):
+    num_categories = 10
+
+    username = session["username"]
+    access_clients = users[username]["AccessCL"]
+    print('access_clients',access_clients)
+    df = load_data()
+    print('df',df)
+    df  = filter_data_by_cl(session["username"], df, '', access_clients)
+    print('df',df)
+
+    rates = {'very_crowded':{}, 'crowded':{}, 'normal':{}, 'uncrowded':{}, 'open_to_accept':{}}
+    very_crowded_df = df[df[Ratio_Col]>=0.5]
+    crowded_df = df[(df[Ratio_Col] < 0.5) & (df[Ratio_Col] >= 0.4)]
+    normal_df = df[(df[Ratio_Col] < 0.4) & (df[Ratio_Col] >= 0.2)]
+    uncrowded_df = df[(df[Ratio_Col] < 0.2) & (df[Ratio_Col] >= 0.1)]
+    open_to_accept_df = df[df[Ratio_Col] == 0]
+    
+    key_list = list(rates.keys())
+    for i,dataframe in enumerate([very_crowded_df, crowded_df, normal_df, uncrowded_df,open_to_accept_df]):
+        selected_key = key_list[i]
+
+        clients = dataframe[CLName_Col].unique()
+
+        for j in clients:
+            
+            if date =='latest':
+
+                client_df = filter_data_by_cl(session["username"], dataframe, j, access_clients)
+           
+                latest_rec = get_latest_lounge_status(client_df)
+                latest_date= latest_rec[Date_col]
+                formatted_date = latest_date.strftime("%Y-%m-%d")
 
 
+            filtered_df = client_df[client_df[Date_col] == formatted_date]
+         
+            if len(filtered_df[Lounge_ID_Col].values) != 0:
+                rates[selected_key][j] = []
+                for i in range(len(filtered_df[Lounge_ID_Col].values)):
+
+                    rates[selected_key][j].append([filtered_df[Lounge_ID_Col].values[i],filtered_df[Volume_ID_Col].values[i], filtered_df[Refuse_Col].values[i], filtered_df[Ratio_Col].values[i]])
 
 
+    return rates
+
+def get_notifications(inact_loung_num,inactive_clients,crowdedness):
+    news=[]
+    if inact_loung_num != 0:
+        news.append('You have inactive lounges😟')
+    if inactive_clients:
+        news.append('You have no inactive clients😟')
+    
+    if 'open_to_accept' in crowdedness:
+        if len(crowdedness['open_to_accept']) > 0:
+            news.append('There are some uncrowded lounges to offer😃')
+    if 'very_crowded' in crowdedness:
+            if len(crowdedness['very_crowded']) > 0:
+                news.append('There exists chosen by many lounges🤔')
+    return news
 
 @app.route('/', methods=['GET'])
 def index():
@@ -388,6 +449,7 @@ def home():
     accessed_df = filter_data_by_cl(session["username"], df, '', access_clients)
 
     data = accessed_df.to_dict(orient='records')
+    crowdedness = lounge_crowdedness()
 
     
 
@@ -395,11 +457,13 @@ def home():
     active_clients, inactive_clients = active_clients_percent(access_clients, active_lounges, inactive_lounges)
     volume_rates, vol_curr, vol_prev = volume_rate(access_clients, amount=7)
     cl_lounges_ = cl_lounges_dict('lounges')
-  
+    notifications = get_notifications(inact_loung_num,inactive_clients,crowdedness)
+    
+    
 
-    stat_list = [act_loung_num, inact_loung_num,vol_curr, vol_prev, len(active_clients), len(inactive_clients),inactive_lounges]
+    stat_list = [act_loung_num, inact_loung_num,vol_curr, vol_prev, len(active_clients), len(inactive_clients),inactive_lounges, crowdedness, notifications]
 
-    print(active_clients)
+    
     return render_template('index.html', data= data, clients= access_clients, stats= stat_list, cl_lounges_= cl_lounges_)
 
 
@@ -410,6 +474,7 @@ def home():
 def update_plot():
     selected_client = request.form['client']
     selected_lounge = request.form['lounge_name']
+
    
     username = session["username"]
     access_clients = users[username]["AccessCL"]
@@ -418,7 +483,7 @@ def update_plot():
 
 
     #scales: sec, min, hour, day, mo, year
-    no_data_dict = stream_on_off(scale='day', length=7)
+    no_data_dict = stream_on_off(scale='day', length=time_alert)
 
     #to avoid strem monitoring
     # no_data_dict = {}
@@ -531,6 +596,21 @@ def update_plot():
         return jsonify({'traces': traces, 'layouts': layouts , 'errors': errors})
 
 
+@app.route('/intelligence_hub', methods=['GET'])
+def intelligence_hub():
+    username = session["username"]
+    access_clients = users[username]["AccessCL"]
+
+    active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients)
+    active_clients, inactive_clients = active_clients_percent(access_clients, active_lounges, inactive_lounges)
+    crowdedness = lounge_crowdedness()
+
+    stat_list = [inactive_clients,inactive_lounges,crowdedness]
+    
+    return render_template('intelligence_hub.html', clients= access_clients, stats= stat_list)
+
+
+
 @app.route('/dormant', methods=['GET'])
 def dormant():
     username = session["username"]
@@ -541,6 +621,7 @@ def dormant():
     stat_list = [inactive_clients,inactive_lounges]
     
     return render_template('dormant.html', clients= access_clients, stats= stat_list)
+
 
 
 
