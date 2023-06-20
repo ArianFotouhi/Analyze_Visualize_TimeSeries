@@ -171,7 +171,9 @@ def update_plot():
             airport_list, airport_num = ParameterCounter(name = client, base= CLName_Col, to_be_counted= Airport_Name_Col)
 
             layout = {
-                'title': f'{client} Active Lounge {actives}/{ actives + inactives}, Airport No. {airport_num}',
+                'title': f'{client} Active Lounge {actives}/{ actives + inactives}, AP No. {airport_num}',
+                'font': {
+                        'size': 8 },
                 'xaxis': {'title': 'Date'},
                 'yaxis': {'title': 'Rate'}
             }
