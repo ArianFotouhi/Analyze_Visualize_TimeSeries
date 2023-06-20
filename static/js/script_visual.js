@@ -22,6 +22,7 @@ $(document).ready(function() {
     function updatePlot() {
         var selectedClient = $('#client').val();
         var selectedLounge = $('#lounge_name').val();
+        var selectedAirport = $('#airport_name').val();
 
 
         var currentDate = new Date();
@@ -31,7 +32,7 @@ $(document).ready(function() {
         $.ajax({
             url: '/update_plot',
             type: 'POST',
-            data: { client: selectedClient, lounge_name: selectedLounge},
+            data: { client: selectedClient, lounge_name: selectedLounge, airport_name: selectedAirport},
 
             success: function(response) {
                 var traces = response.traces;
@@ -44,7 +45,7 @@ $(document).ready(function() {
                 for (var i = 0; i < traces.length; i++) {
                     var chartId = 'chart-' + i;
                     var chartDiv = $('<div>').attr('id', chartId).addClass('plot');
-                    if (selectedClient !== '' || selectedLounge !=='') {
+                    if (selectedClient !== '' || selectedLounge !=='' || selectedAirport!== '') {
                         chartDiv.addClass('single');
                     }
                     chartsContainer.append(chartDiv);
