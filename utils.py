@@ -3,7 +3,7 @@ from flask import session
 
 from datetime import datetime, timedelta
 import pytz
-from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col, Refuse_Col, Ratio_Col, users, time_alert
+from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col, Refuse_Col, Ratio_Col, users, time_alert, crowdedness_alert, Time_col, Airport_Name_Col
 
 
 
@@ -113,6 +113,8 @@ def get_latest_lounge_status(df):
 
     for _, group_df in df.groupby([CLName_Col, Lounge_ID_Col]):
         group_df[Date_col] = pd.to_datetime(group_df[Date_col], format='%Y-%m-%d')
+        group_df[Time_col] = pd.to_datetime(group_df[Time_col], format='%H:%M:%S')
+
         group_df = group_df.sort_values(Date_col, ascending=False)  # Sort by date in descending order
         latest_date = group_df.iloc[0][Date_col]
 
@@ -314,12 +316,11 @@ def cl_lounges_dict(column):
         pass
 
 
-def lounge_crowdedness(date='latest'):
+def lounge_crowdedness(date='latest', alert=crowdedness_alert):
     num_categories = 10
 
     username = session["username"]
     access_clients = users[username]["AccessCL"]
-    # print('access_clients',access_clients)
     df = load_data()
 
     df  = filter_data_by_cl(session["username"], df, '', access_clients)
@@ -331,6 +332,7 @@ def lounge_crowdedness(date='latest'):
     uncrowded_df = df[(df[Ratio_Col] < 0.2) & (df[Ratio_Col] >= 0.1)]
     open_to_accept_df = df[df[Ratio_Col] == 0]
     
+
     key_list = list(rates.keys())
     for i,dataframe in enumerate([very_crowded_df, crowded_df, normal_df, uncrowded_df,open_to_accept_df]):
         selected_key = key_list[i]
@@ -338,23 +340,28 @@ def lounge_crowdedness(date='latest'):
         clients = dataframe[CLName_Col].unique()
 
         for j in clients:
-            
+            time_exists = True
+            date_exists = True
             if date =='latest':
-
+                
                 client_df = filter_data_by_cl(session["username"], dataframe, j, access_clients)
-           
-                latest_rec = get_latest_lounge_status(client_df)
-                latest_date= latest_rec[Date_col]
-                formatted_date = latest_date.strftime("%Y-%m-%d")
+                # print( key_list[i], client_df)
+                latest_date, latest_time = get_latest_date_time(client_df, date= date_exists, time= time_exists)
+                
+            print('latest_date',latest_date)
+            if date_exists and (datetime.now() - latest_date) > timedelta(days=alert):
+                client_df = client_df[client_df[Date_col] == latest_date]
+            if time_exists:
+                client_df = client_df[client_df[Time_col] == latest_time]
 
+            filtered_df = client_df
 
-            filtered_df = client_df[client_df[Date_col] == formatted_date]
-         
             if len(filtered_df[Lounge_ID_Col].values) != 0:
                 rates[selected_key][j] = []
-                for i in range(len(filtered_df[Lounge_ID_Col].values)):
+                print(selected_key,latest_date, latest_time)
 
-                    rates[selected_key][j].append([filtered_df[Lounge_ID_Col].values[i],filtered_df[Volume_ID_Col].values[i], filtered_df[Refuse_Col].values[i], filtered_df[Ratio_Col].values[i]])
+                for i in range(len(filtered_df[Lounge_ID_Col].values)):
+                    rates[selected_key][j].append([filtered_df[Lounge_ID_Col].values[i],filtered_df[Volume_ID_Col].values[i], filtered_df[Refuse_Col].values[i], filtered_df[Ratio_Col].values[i], latest_date, latest_time])
 
 
     return rates
@@ -373,3 +380,20 @@ def get_notifications(inact_loung_num,inactive_clients,crowdedness):
             if len(crowdedness['very_crowded']) > 0:
                 news.append('Some lounges are too crowded😟')
     return news
+
+def get_latest_date_time(df,date=True, time= False):
+    latest_rec = get_latest_lounge_status(df)
+    
+    
+    if date:
+        latest_date= latest_rec[Date_col]
+
+        
+
+    if time:
+        latest_time = latest_rec[Time_col]
+    
+
+
+
+    return latest_date, latest_time
