@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, session, jsonify
 from utils import load_data, filter_data_by_cl, dropdown_menu_filter, LoungeCounter, stream_on_off, active_inactive_lounges, active_clients_percent, volume_rate, filter_unique_val_dict, lounge_crowdedness, get_notifications, ParameterCounter
-from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col,  users, time_alert, crowdedness_alert, Airport_Name_Col, Time_col
+from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col,  users, time_alert, crowdedness_alert, Airport_Name_Col, City_Name_Col, Country_Name_Col
 from authentication import Authentication
 
 authenticate = Authentication().authenticate
@@ -51,6 +51,8 @@ def home():
     volume_rates, vol_curr, vol_prev = volume_rate(access_clients, amount=7)
     cl_lounges_ = filter_unique_val_dict('lounges')
     airport_uq_list = filter_unique_val_dict('airport')
+    city_uq_list = filter_unique_val_dict('city')
+    country_uq_list = filter_unique_val_dict('country')
     print('airport_uq_list', airport_uq_list)
     print('cl_lounges_', cl_lounges_)
     print('client',access_clients)
@@ -61,7 +63,7 @@ def home():
     stat_list = [act_loung_num, inact_loung_num,vol_curr, vol_prev, len(active_clients), len(inactive_clients),inactive_lounges, crowdedness, notifications]
 
     
-    return render_template('index.html', data= data, clients= access_clients, stats= stat_list, cl_lounges_= cl_lounges_, airports = airport_uq_list)
+    return render_template('index.html', data= data, clients= access_clients, stats= stat_list, cl_lounges_= cl_lounges_, airports = airport_uq_list, cities = city_uq_list, countries = country_uq_list)
 
 
   
@@ -72,6 +74,9 @@ def update_plot():
     selected_client = request.form['client']
     selected_lounge = request.form['lounge_name']
     selected_airport = request.form['airport_name']
+    selected_city = request.form['city_name']
+    selected_country = request.form['country_name']
+
 
    
     username = session["username"]
@@ -86,7 +91,7 @@ def update_plot():
     #to avoid strem monitoring
     # no_data_dict = {}
 
-    if selected_client or selected_lounge or selected_airport:
+    if selected_client or selected_lounge or selected_airport or selected_city or selected_country:
         active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients)
 
         # lounge_num  = LoungeCounter(str(client))
@@ -111,8 +116,14 @@ def update_plot():
         
         if selected_airport:
             df = dropdown_menu_filter(df,Airport_Name_Col, selected_airport)
-                
         
+        if selected_city:
+            df = dropdown_menu_filter(df,City_Name_Col, selected_city)
+        
+        if selected_country:
+            df = dropdown_menu_filter(df,Country_Name_Col, selected_country)
+
+
         if selected_client in active_lounges:
                 actives = len(active_lounges[selected_client])
         else:
@@ -121,7 +132,6 @@ def update_plot():
                 inactives = len(inactive_lounges[selected_client])
         else:
                 inactives = 0
-                # lounge_num = 0
 
 
         trace = {
@@ -135,7 +145,7 @@ def update_plot():
         }
 
         layout = {
-            'title': f'{selected_client} {selected_lounge} {selected_airport}',
+            'title': f'{selected_client} {selected_lounge} {selected_airport} {selected_city} {selected_country}',
             'xaxis': {'title': 'Date'},
             'yaxis': {'title': 'Rate'}
         }
