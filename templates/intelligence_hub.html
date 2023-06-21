@@ -116,7 +116,7 @@
 
         <div class="card-wrapper">
             <div class="card text-white bg-light-red mb-3" style="max-width: 18rem;">
-                <div class="card-header">Very Crowded!😨</div>
+                <div class="card-header">Chosen by many!🤔</div>
                 <div class="card-body">
                     <h5 class="card-title">{{client}}</h5>
                     
@@ -179,70 +179,7 @@
 
 
 
-    <div class="row" style=" justify-content: center; ">
-        {% for client in clients %}
-        {% if client in stats[2]['crowded'].keys() %}
 
-        <div class="card-wrapper">
-            <div class="card text-black bg-light-yellow mb-3" style="max-width: 18rem;">
-                <div class="card-header">Crowded!🙁</div>
-                <div class="card-body">
-                    <h5 class="card-title">{{client}}</h5>
-                    
-                    <div class="container">
-                        
-                        {% set num_bullet_points = stats[2]['crowded'][client]|length %}
-                        
-                        {% if 3 > num_bullet_points %}
-                        
-                        {% for component in stats[2]['crowded'][client] %}
-                        <div class="row">
-                            <div class="col-md-12">
-                                <ul>
-                                    <li>{{component[0]}} {{component[4]}}</li>
-                                </ul>
-                            </div>
-                        </div>
-                        {% endfor %}
-                        
-                        {% else %}
-                        <div class="container">
-                            {% for component in stats[2]['crowded'][client][:2] %}
-                        <div class="row">
-                            <div class="col-md-12">
-                                <ul>
-                                    <li>{{component[0]}} {{component[4]}}</li>
-                                </ul>
-                            </div>
-                        </div>
-                        {% endfor %}
-
-                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse3_{{ client|replace(' ', '') }}" style="color: black;" aria-expanded="false" aria-controls="collapse{{ client|replace(' ', '') }}">More ...</button>
-                        <div class="collapse" id="collapse3_{{ client|replace(' ', '') }}">
-                            
-                                {% for component in stats[2]['crowded'][client][2:] %}
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <ul>
-                                            <li>{{component[0]}} {{component[4]}}</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-
-                        {% endif %}
-    
-
-                    </div>
-
-                </div>
-            </div>
-        </div>
-        {% endif %}
-        {% endfor %}
-    </div>
 
 </body>
 
