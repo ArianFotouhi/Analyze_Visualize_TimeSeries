@@ -13,6 +13,7 @@ def load_data():
 
     df = pd.read_csv("real_data.txt")
     df[Date_col] = pd.to_datetime(df[Date_col])
+    
     # df = pd.read_csv('data_.txt')
     return df
 
@@ -360,7 +361,7 @@ def lounge_crowdedness(date='latest', alert=crowdedness_alert):
 
             if (datetime.now() - latest_date) > timedelta(days=alert):
                 continue
-            
+
             client_df = client_df[client_df[Date_col] == latest_date]
 
             filtered_df = client_df
@@ -395,10 +396,34 @@ def get_notifications(inact_loung_num,inactive_clients,crowdedness):
 def get_latest_date_time(df):
 
     latest_rec = get_latest_lounge_status(df)
-    
-    
+        
     latest_date= pd.to_datetime(latest_rec[Date_col])
 
-
-
     return latest_date
+
+def record_sum_calculator(data,n):
+    num_groups = len(data) // n
+    
+    result = []
+    # Iterate over the groups and calculate the sum for each group
+    for i in range(num_groups):
+        start_index = i * n
+        end_index = start_index + n
+        group_sum = data[start_index:end_index]
+        if i == 0:
+            print('group_sum', group_sum)
+        group_sum = sum(group_sum)
+        result.append(group_sum)
+    return result
+
+def record_lister(data, n):
+    num_groups = len(data) // n
+    
+    result = []
+    # Iterate over the groups and calculate the sum for each group
+    for i in range(num_groups):
+        start_index = i * n
+        sliced_obj = data[start_index]
+        
+        result.append(sliced_obj)
+    return result
