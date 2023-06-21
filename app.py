@@ -113,11 +113,8 @@ def update_plot():
                 airport_list, airport_num = ParameterCounter(name = selected_client, base= CLName_Col, to_be_counted= Airport_Name_Col)
         
         if selected_airport:
-            print('selected_airport', selected_airport)
-            print('df', df)
 
             df = dropdown_menu_filter(df,Airport_Name_Col, selected_airport)
-            print('filtered df', df)
         if selected_city:
             df = dropdown_menu_filter(df,City_Name_Col, selected_city)
         
@@ -221,7 +218,7 @@ def intelligence_hub():
     active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients)
     active_clients, inactive_clients = active_clients_percent(access_clients, active_lounges, inactive_lounges)
     crowdedness = lounge_crowdedness(date='latest',alert = crowdedness_alert)
-
+    # print('crowdedness',crowdedness['very_crowded']['LH'])
     stat_list = [inactive_clients,inactive_lounges,crowdedness]
     
     return render_template('intelligence_hub.html', clients= access_clients, stats= stat_list)
