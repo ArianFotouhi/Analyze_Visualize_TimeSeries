@@ -14,7 +14,7 @@ crowdedness_alert = 18
 plot_interval = 24
 
 users = {
-    "admin": {"password": "admin", "ClientID": 'admin', 'AccessCL':['STAR_AMS']},
+    "admin": {"password": "admin", "ClientID": 'admin', 'AccessCL':['STAR_AMS', 'CL2','CL3','CL4','CL5','CL6','CL7']},
 }
 
 # Date_col ='DATE_UTC'
@@ -24,7 +24,7 @@ users = {
 # Refuse_Col='COUNT_PAX_REFUSED'
 # Ratio_Col='REF2ALW'
 # users = {
-#     "admin": {"password": "admin", "ClientID": 'admin', 'AccessCL':['LH','LX', 'MAG', 'CDG', 'LHR', 'DCA']},
+#     "admin": {"password": "admin", "ClientID": 'admin', 'AccessCL':['LH','LX', 'MAG']},
 
 #     "user1": {"password": "pass", "ClientID": 1 , 'AccessCL':['MAG','LX']},
 #     "user2": {"password": "pass", "ClientID": 2, 'AccessCL':['LH']},
