@@ -55,7 +55,7 @@ def authenticate(username, password):
 
 def load_data():
     # df = pd.read_csv("data/data.txt")
-    df = pd.read_csv("../../project1/Analyze_Visualize_TimeSeries/data/data.txt")
+    df = pd.read_csv("data.txt")
 
     # df['Date'] = pd.to_datetime(df['Date'])
     return df
@@ -413,7 +413,7 @@ def get_notifications(inact_loung_num,inactive_clients,crowdedness):
             news.append('There are some uncrowded lounges to offer😃')
     if 'very_crowded' in crowdedness:
             if len(crowdedness['very_crowded']) > 0:
-                news.append('Some lounges are too crowded😟')
+                news.append('There exists chosen by many lounges🤔')
     return news
 
 @app.route('/', methods=['GET'])
@@ -474,6 +474,7 @@ def home():
 def update_plot():
     selected_client = request.form['client']
     selected_lounge = request.form['lounge_name']
+
    
     username = session["username"]
     access_clients = users[username]["AccessCL"]
