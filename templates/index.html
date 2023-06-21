@@ -30,38 +30,11 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav">
-            <li class="nav-item active" style="color: white;">
-                {% if stats[8] %}
-                <div class="navbar-collapse" > 
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <div id="notification" class="notification-container">
-                                {% if stats[8]|length == 1 %}
-                                    {{ stats[8][0] }}
-                                {% else %}
-                                    <span id="notificationText"></span>
-                                {% endif %}
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-                {% endif %}
-                
-                {% if stats[8]|length > 1 %}
-                <script>
-                    var statsList = {{ stats[8]|tojson }};
-                    var notificationTextElement = document.getElementById("notificationText");
-                    var currentIndex = 0;
-                
-                    setInterval(function() {
-                        notificationTextElement.textContent = statsList[currentIndex];
-                        currentIndex = (currentIndex + 1) % statsList.length;
-                    }, 3000);
-                </script>
-                {% endif %}            
-            </li>
+            <!-- <li class="nav-item active" style="color: white;">
+                 
+            </li> -->
             <li class="nav-item" style="color: white;">
-                <div id="last-update"></div>
+                <div id="last-update" style="font-size: smaller;"></div>
             </li>
             <li class="nav-item">
                 <form id="client-form" action="/home" method="get">
@@ -96,7 +69,23 @@
                                     </select>
                                 </div>
                                 
-                                
+                                <div class="col">
+                                    <select class="custom-select custom-select-sm" id="city_name" name="city_name">
+                                        <option value="">All Cities</option>
+                                        {% for city_name in cities %}
+                                            <option value="{{ city_name }}">{{ city_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="col">
+                                    <select class="custom-select custom-select-sm" id="country_name" name="country_name">
+                                        <option value="">All Countries</option>
+                                        {% for country_name in countries %}
+                                            <option value="{{ country_name }}">{{ country_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
 
                             </div>
                         </div>
@@ -166,7 +155,37 @@
         </div>
     </div>
 </div>
+
+<div class="container-fluid">
+    {% if stats[8] %}
+    <div class="navbar-collapse" > 
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <div id="notification" class="notification-container" style="text-align: center;">
+                    {% if stats[8]|length == 1 %}
+                        {{ stats[8][0] }}
+                    {% else %}
+                        <span id="notificationText"></span>
+                    {% endif %}
+                </div>
+            </li>
+        </ul>
+    </div>
+    {% endif %}
     
+    {% if stats[8]|length > 1 %}
+    <script>
+        var statsList = {{ stats[8]|tojson }};
+        var notificationTextElement = document.getElementById("notificationText");
+        var currentIndex = 0;
+    
+        setInterval(function() {
+            notificationTextElement.textContent = statsList[currentIndex];
+            currentIndex = (currentIndex + 1) % statsList.length;
+        }, 3000);
+    </script>
+    {% endif %}           
+</div>
 
 <div class="container-fluid" >
     <div id="charts-container" class="row" style="padding: 0px;"></div>
