@@ -10,8 +10,8 @@ from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col, Refuse_Co
 
 
 def load_data():
-    # df = pd.read_csv("data/data.txt")
-    # df = pd.read_csv("data.txt")
+
+    # df = pd.read_csv("real_data_.txt")
 
     df = pd.read_csv('data_.txt')
     return df
@@ -110,9 +110,10 @@ def stream_on_off(scale='sec', length=10):
 def get_latest_lounge_status(df):
     current_date = datetime.now(pytz.UTC)
     latest_record = None
-
+     
     for _, group_df in df.groupby([CLName_Col, Lounge_ID_Col]):
         group_df[Date_col] = pd.to_datetime(group_df[Date_col], format='%Y-%m-%d %H:%M:%S')
+        # group_df[Date_col] = pd.to_datetime(group_df[Date_col], format='%Y-%m-%d %H:%M:%S')
 
         group_df = group_df.sort_values(Date_col, ascending=False)  # Sort by date in descending order
         latest_date = group_df.iloc[0][Date_col]
@@ -259,10 +260,10 @@ def volume_rate(clients, amount=5):
     current_vol = 0
     prev_vol = 0
     for client_id in clients:
+        print('client', client_id)
         client_df = df[df[CLName_Col] == client_id]  # Filter the DataFrame for a particular client
         
        
-        
         latest_record = client_df.iloc[-1]  # Get the latest record for the client
         
         last_date = latest_record[Date_col]
@@ -341,6 +342,7 @@ def lounge_crowdedness(date='latest', alert=crowdedness_alert):
     df  = filter_data_by_cl(session["username"], df, '', access_clients)
 
     rates = {'very_crowded':{}, 'crowded':{}, 'normal':{}, 'uncrowded':{}, 'open_to_accept':{}}
+   
     very_crowded_df = df[df[Ratio_Col]>=0.5]
     crowded_df = df[(df[Ratio_Col] < 0.5) & (df[Ratio_Col] >= 0.4)]
     normal_df = df[(df[Ratio_Col] < 0.4) & (df[Ratio_Col] >= 0.2)]
@@ -351,17 +353,18 @@ def lounge_crowdedness(date='latest', alert=crowdedness_alert):
     key_list = list(rates.keys())
     for i,dataframe in enumerate([very_crowded_df, crowded_df, normal_df, uncrowded_df,open_to_accept_df]):
         selected_key = key_list[i]
-
+    
         clients = dataframe[CLName_Col].unique()
-
+        
         for j in clients:
+
             if date =='latest':
-                
+                print('clients',j,access_clients)
                 client_df = filter_data_by_cl(session["username"], dataframe, j, access_clients)
-                # print( 'PRINTED INFO: ',key_list[i], client_df)
+
+                
                 latest_date = get_latest_date_time(client_df)
                 
-            print('latest_date',latest_date)
             if (datetime.now() - latest_date) > timedelta(days=alert):
                 client_df = client_df[client_df[Date_col] == latest_date]
 
@@ -392,6 +395,7 @@ def get_notifications(inact_loung_num,inactive_clients,crowdedness):
     return news
 
 def get_latest_date_time(df):
+
     latest_rec = get_latest_lounge_status(df)
     
     
