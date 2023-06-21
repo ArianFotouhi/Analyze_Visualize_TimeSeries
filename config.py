@@ -1,4 +1,4 @@
-Date_col ='Date_Local'
+Date_col ='Date_Time'
 CLName_Col = 'CLIENT_NAME'
 Lounge_ID_Col = 'Lounge_name'
 Volume_ID_Col = 'PAX_Accept'
@@ -10,11 +10,11 @@ Ratio_Col='REF2ALW'
 
 
 time_alert = 20
-crowdedness_alert = 10
+crowdedness_alert = 18
 
-# users = {
-#     "admin": {"password": "admin", "ClientID": 'admin', 'AccessCL':['STAR_AMS']},
-# }
+users = {
+    "admin": {"password": "admin", "ClientID": 'admin', 'AccessCL':['STAR_AMS']},
+}
 
 # Date_col ='DATE_UTC'
 # CLName_Col = 'CLIENT_NAME'
@@ -22,10 +22,10 @@ crowdedness_alert = 10
 # Volume_ID_Col = 'COUNT_PAX_ALLOWED'
 # Refuse_Col='COUNT_PAX_REFUSED'
 # Ratio_Col='REF2ALW'
-users = {
-    "admin": {"password": "admin", "ClientID": 'admin', 'AccessCL':['LH','LX', 'MAG', 'CDG', 'LHR', 'DCA']},
+# users = {
+#     "admin": {"password": "admin", "ClientID": 'admin', 'AccessCL':['LH','LX', 'MAG', 'CDG', 'LHR', 'DCA']},
 
-    "user1": {"password": "pass", "ClientID": 1 , 'AccessCL':['MAG','LX']},
-    "user2": {"password": "pass", "ClientID": 2, 'AccessCL':['LH']},
-    "user3": {"password": "pass", "ClientID": 3, 'AccessCL':['LX']},
-}
+#     "user1": {"password": "pass", "ClientID": 1 , 'AccessCL':['MAG','LX']},
+#     "user2": {"password": "pass", "ClientID": 2, 'AccessCL':['LH']},
+#     "user3": {"password": "pass", "ClientID": 3, 'AccessCL':['LX']},
+# }
