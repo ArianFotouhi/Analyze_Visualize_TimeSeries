@@ -1,7 +1,8 @@
 from flask import Flask, render_template, request, redirect, session, jsonify
-from utils import load_data, filter_data_by_cl, dropdown_menu_filter, LoungeCounter, stream_on_off, active_inactive_lounges, active_clients_percent, volume_rate, filter_unique_val_dict, lounge_crowdedness, get_notifications, ParameterCounter
-from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col,  users, time_alert, crowdedness_alert, Airport_Name_Col, City_Name_Col, Country_Name_Col
+from utils import load_data, filter_data_by_cl, dropdown_menu_filter, LoungeCounter, stream_on_off, active_inactive_lounges, active_clients_percent, volume_rate, filter_unique_val_dict, lounge_crowdedness, get_notifications, ParameterCounter, record_sum_calculator, record_lister
+from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col,  users, time_alert, crowdedness_alert, Airport_Name_Col, City_Name_Col, Country_Name_Col, plot_interval
 from authentication import Authentication
+# import pandas as pd
 
 authenticate = Authentication().authenticate
 app = Flask(__name__)
@@ -131,11 +132,13 @@ def update_plot():
         else:
                 inactives = 0
 
+        date_list = record_lister(df[Date_col].dt.strftime('%Y-%m-%d %H:%M:%S').unique().tolist(), plot_interval)
+        vol_sum_list = record_sum_calculator(df.groupby(Date_col)[Volume_ID_Col].sum().to_list(), plot_interval)
 
         trace = {
-            'x': df[Date_col].unique().tolist(),
-            'y': df.groupby(Date_col)[Volume_ID_Col].sum().to_list(),
-            'text': df.groupby(Date_col)[Volume_ID_Col].sum().apply(lambda x: f"Rate: {x}<br>").tolist(),
+            'x': date_list,
+            'y': vol_sum_list,
+            'text': vol_sum_list,
             'hovertemplate': '%{text}',
             'type': 'scatter',
             'mode': 'lines',
@@ -167,6 +170,8 @@ def update_plot():
 
         for client in access_clients:
             client_df = filter_data_by_cl(session["username"], df, client, access_clients)
+
+
             # lounge_num  = LoungeCounter(str(client))
 
             if str(client) in active_lounges:
@@ -178,11 +183,18 @@ def update_plot():
             else:
                 inactives = 0
             airport_list, airport_num = ParameterCounter(name = client, base= CLName_Col, to_be_counted= Airport_Name_Col)
+            
 
+           
+            
+            date_list = record_lister(client_df[Date_col].dt.strftime('%Y-%m-%d %H:%M:%S').unique().tolist(), plot_interval)
+            vol_sum_list = record_sum_calculator(client_df.groupby(Date_col)[Volume_ID_Col].sum().to_list(), plot_interval)
+           
+    
             trace = {
-                'x': client_df[Date_col].unique().tolist(),
-                'y': client_df.groupby(Date_col)[Volume_ID_Col].sum().to_list(),
-                'text': client_df.groupby(Date_col)[Volume_ID_Col].sum().apply(lambda x: f"Rate: {x}<br>").tolist(),
+                'x': date_list,
+                'y': vol_sum_list,
+                'text': vol_sum_list,
                 'hovertemplate': '%{text}',
                 'type': 'scatter',
                 'mode': 'lines',
@@ -218,7 +230,6 @@ def intelligence_hub():
     active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients)
     active_clients, inactive_clients = active_clients_percent(access_clients, active_lounges, inactive_lounges)
     crowdedness = lounge_crowdedness(date='latest',alert = crowdedness_alert)
-    # print('crowdedness',crowdedness['very_crowded']['LH'])
     stat_list = [inactive_clients,inactive_lounges,crowdedness]
     
     return render_template('intelligence_hub.html', clients= access_clients, stats= stat_list)
