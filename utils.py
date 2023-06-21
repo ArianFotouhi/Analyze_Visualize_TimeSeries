@@ -10,11 +10,11 @@ from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col, Refuse_Co
 
 
 def load_data():
-
-    df = pd.read_csv("real_data.txt")
+    df = pd.read_csv('fake_data.txt')
+    # df = pd.read_csv("real_data.txt")
     df[Date_col] = pd.to_datetime(df[Date_col])
     
-    # df = pd.read_csv('data_.txt')
+    #df = df[df.index % 10 == 0]
     return df
 
 
@@ -410,8 +410,6 @@ def record_sum_calculator(data,n):
         start_index = i * n
         end_index = start_index + n
         group_sum = data[start_index:end_index]
-        if i == 0:
-            print('group_sum', group_sum)
         group_sum = sum(group_sum)
         result.append(group_sum)
     return result
