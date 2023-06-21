@@ -11,9 +11,9 @@ from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col, Refuse_Co
 
 def load_data():
 
-    # df = pd.read_csv("real_data_.txt")
-
-    df = pd.read_csv('data_.txt')
+    df = pd.read_csv("real_data.txt")
+    df[Date_col] = pd.to_datetime(df[Date_col])
+    # df = pd.read_csv('data_.txt')
     return df
 
 
@@ -70,7 +70,6 @@ def stream_on_off(scale='sec', length=10):
     unique_ids = set(df[CLName_Col].unique())
     for i in unique_ids:
         # Assuming the 'time' column is of type datetime
-        df[Date_col] = pd.to_datetime(df[Date_col])
 
         # Filter the DataFrame for the last record with id=X
         last_record = df[df[CLName_Col] == i].tail(1)
@@ -112,7 +111,7 @@ def get_latest_lounge_status(df):
     latest_record = None
      
     for _, group_df in df.groupby([CLName_Col, Lounge_ID_Col]):
-        group_df[Date_col] = pd.to_datetime(group_df[Date_col], format='%Y-%m-%d %H:%M:%S')
+        group_df[Date_col] = pd.to_datetime(group_df[Date_col], format='%Y-%m-%d')
         # group_df[Date_col] = pd.to_datetime(group_df[Date_col], format='%Y-%m-%d %H:%M:%S')
 
         group_df = group_df.sort_values(Date_col, ascending=False)  # Sort by date in descending order
@@ -182,7 +181,8 @@ def get_lounge_status(date, time_difference):
 
 def active_inactive_lounges(clients):
     time_difference= time_alert
-    date_format= '%Y-%m-%d %H:%M:%S'
+    # date_format= '%Y-%m-%d %H:%M:%S'
+    date_format= '%Y-%m-%d'
     convert_option=None
     df = load_data()
     active_lounges = {}
@@ -252,7 +252,6 @@ def active_clients_percent(clients,actdict, inactdict):
 def volume_rate(clients, amount=5):
     rates = {}
     df = load_data()
-    df[Date_col] = pd.to_datetime(df[Date_col])
    
    
     volume_sum_x = 0
@@ -260,7 +259,6 @@ def volume_rate(clients, amount=5):
     current_vol = 0
     prev_vol = 0
     for client_id in clients:
-        print('client', client_id)
         client_df = df[df[CLName_Col] == client_id]  # Filter the DataFrame for a particular client
         
        
@@ -333,7 +331,6 @@ def filter_unique_val_dict(column):
 
 
 def lounge_crowdedness(date='latest', alert=crowdedness_alert):
-    num_categories = 10
 
     username = session["username"]
     access_clients = users[username]["AccessCL"]
@@ -348,25 +345,23 @@ def lounge_crowdedness(date='latest', alert=crowdedness_alert):
     normal_df = df[(df[Ratio_Col] < 0.4) & (df[Ratio_Col] >= 0.2)]
     uncrowded_df = df[(df[Ratio_Col] < 0.2) & (df[Ratio_Col] >= 0.1)]
     open_to_accept_df = df[df[Ratio_Col] == 0]
-    
 
     key_list = list(rates.keys())
     for i,dataframe in enumerate([very_crowded_df, crowded_df, normal_df, uncrowded_df,open_to_accept_df]):
         selected_key = key_list[i]
     
         clients = dataframe[CLName_Col].unique()
-        
         for j in clients:
 
             if date =='latest':
-                print('clients',j,access_clients)
                 client_df = filter_data_by_cl(session["username"], dataframe, j, access_clients)
-
-                
                 latest_date = get_latest_date_time(client_df)
-                
+
+
             if (datetime.now() - latest_date) > timedelta(days=alert):
-                client_df = client_df[client_df[Date_col] == latest_date]
+                continue
+            
+            client_df = client_df[client_df[Date_col] == latest_date]
 
             filtered_df = client_df
 
@@ -374,7 +369,10 @@ def lounge_crowdedness(date='latest', alert=crowdedness_alert):
                 rates[selected_key][j] = []
 
                 for i in range(len(filtered_df[Lounge_ID_Col].values)):
-                    rates[selected_key][j].append([filtered_df[Lounge_ID_Col].values[i],filtered_df[Volume_ID_Col].values[i], filtered_df[Refuse_Col].values[i], filtered_df[Ratio_Col].values[i], latest_date])
+                    if not rates[selected_key][j]:
+                        rates[selected_key][j].append([filtered_df[Lounge_ID_Col].values[i],filtered_df[Volume_ID_Col].values[i], filtered_df[Refuse_Col].values[i], filtered_df[Ratio_Col].values[i], latest_date])
+                    elif filtered_df[Lounge_ID_Col].values[i] not in rates[selected_key][j][0]:
+                        rates[selected_key][j].append([filtered_df[Lounge_ID_Col].values[i],filtered_df[Volume_ID_Col].values[i], filtered_df[Refuse_Col].values[i], filtered_df[Ratio_Col].values[i], latest_date])
 
 
     return rates
@@ -399,7 +397,7 @@ def get_latest_date_time(df):
     latest_rec = get_latest_lounge_status(df)
     
     
-    latest_date= latest_rec[Date_col]
+    latest_date= pd.to_datetime(latest_rec[Date_col])
 
 
 
