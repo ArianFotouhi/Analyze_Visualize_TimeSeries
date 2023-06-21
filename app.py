@@ -53,9 +53,7 @@ def home():
     airport_uq_list = filter_unique_val_dict('airport')
     city_uq_list = filter_unique_val_dict('city')
     country_uq_list = filter_unique_val_dict('country')
-    print('airport_uq_list', airport_uq_list)
-    print('cl_lounges_', cl_lounges_)
-    print('client',access_clients)
+
     notifications = get_notifications(inact_loung_num,inactive_clients,crowdedness)
     
     
@@ -115,8 +113,11 @@ def update_plot():
                 airport_list, airport_num = ParameterCounter(name = selected_client, base= CLName_Col, to_be_counted= Airport_Name_Col)
         
         if selected_airport:
+            print('selected_airport', selected_airport)
+            print('df', df)
+
             df = dropdown_menu_filter(df,Airport_Name_Col, selected_airport)
-        
+            print('filtered df', df)
         if selected_city:
             df = dropdown_menu_filter(df,City_Name_Col, selected_city)
         
