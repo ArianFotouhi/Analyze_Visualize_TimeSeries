@@ -11,6 +11,7 @@ Ratio_Col='REF2ALW'
 
 time_alert = 20
 crowdedness_alert = 18
+plot_interval = 24
 
 users = {
     "admin": {"password": "admin", "ClientID": 'admin', 'AccessCL':['STAR_AMS']},
