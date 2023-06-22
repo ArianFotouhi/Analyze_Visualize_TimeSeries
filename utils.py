@@ -7,7 +7,12 @@ from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col, Refuse_Co
 
 
 
-
+def update_time_alert(new_value):
+    global time_alert
+    time_alert = new_value
+def update_plot_interval(new_value):
+    global plot_interval
+    plot_interval = new_value
 
 def load_data():
     df = pd.read_csv('fake_data.txt')
@@ -383,7 +388,7 @@ def get_notifications(inact_loung_num,inactive_clients,crowdedness):
     if inact_loung_num != 0:
         news.append('You have inactive lounges😟')
     if inactive_clients:
-        news.append('You have no inactive clients😟')
+        news.append('You have inactive clients😟')
     
     if 'open_to_accept' in crowdedness:
         if len(crowdedness['open_to_accept']) > 0:
@@ -425,3 +430,4 @@ def record_lister(data, n):
         
         result.append(sliced_obj)
     return result
+
