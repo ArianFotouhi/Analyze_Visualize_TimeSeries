@@ -168,8 +168,15 @@ def update_plot():
             error_message = f"Last update {no_data_dict[str(selected_client)]}"
         else:
             error_message = None
+        
+        active_clients_num = int(len(active_clients))
+        inactive_clients_num = int(len(inactive_clients))
 
-        return jsonify({'traces': [trace], 'layouts': [layout], 'error_messages': error_message})
+
+        return jsonify({'traces': [trace], 'layouts': [layout], 'error_messages': error_message, 
+                        'lounge_act_num':act_loung_num, 'lounge_inact_num':inact_loung_num,
+                        'vol_curr':int(vol_curr),'vol_prev':int(vol_prev),
+                        'active_clients_num':active_clients_num, 'inactive_clients_num':inactive_clients_num})
 
     else:
         traces = []
