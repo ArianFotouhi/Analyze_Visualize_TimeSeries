@@ -89,6 +89,22 @@
                                       {% endfor %}
                                     </select>
                                   </li>
+                                  <li class="list-group-item">
+                                    <select class="custom-select custom-select-sm" id="time_alert" name="time_alert">
+                                      <option value="20">Default Data Alert (20 days)</option>
+                                      {% for time_alert in setting['time_alert'] %}
+                                      <option value="{{ time_alert }}">{{ time_alert }} (day)</option>
+                                      {% endfor %}
+                                    </select>
+                                  </li>
+                                  <li class="list-group-item">
+                                    <select class="custom-select custom-select-sm" id="plt_interval" name="plt_interval">
+                                      <option value="1">Default Plot Interval (1 day)</option>
+                                      {% for plt_interval in setting['plot_interval'] %}
+                                      <option value="{{ plt_interval }}">{{ plt_interval }} (day)</option>
+                                      {% endfor %}
+                                    </select>
+                                  </li>
                                 </ul>
                               </div>
                             </div>
@@ -121,45 +137,64 @@
 
 <div class="container-fluid">
     <div id="rates-container" class="row justify-content-center">
+
         <div class="col-md-3">
             <div class="card" style="background-color: azure;">
                 <div class="card-body text-center">
                     <h5 class="card-title">Active Lounges</h5>
-                    <!-- <h6 class="card-subtitle mb-2 text-muted">{{ stats[0] * 100 // (stats[0]+stats[1]) }}%</h6> -->
-                    <p class="card-text">{{ stats[0] }} / {{ (stats[0]+stats[1]) }}</p>
+                    <p class="card-text">
+                        <span id="act-lounge"></span> / <span id="lounge-total"></span>
+                    </p>
                 </div>
                 <div class="progress">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="{{ stats[0] * 100 / (stats[0]+stats[1]) }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ stats[0] * 100 / (stats[0]+stats[1]) }}%"> <strong>{{ stats[0] * 100 // (stats[0]+stats[1]) }}%</strong></div>
+                    <div class="progress-bar progress-bar-striped progress-bar-animated"
+                        role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
+                        style="width: 0%;" id="progress_bar_lounge">
+                        <strong></strong>
+                    </div>
                 </div>
             </div>
         </div>
+
+
         <div class="col-md-3">
             <div class="card" style="background-color: azure;">
                 <div class="card-body text-center">
                     <h5 class="card-title">Volume Week by Week</h5>
-                    <!-- <h6 class="card-subtitle mb-2 text-muted">{{ stats[2] * 100 // stats[3] }}%</h6> -->
-                    <p class="card-text">{{ '{:,.0f}'.format(stats[2]) }} / {{ '{:,.0f}'.format(stats[3]) }}</p>
+                    <p class="card-text">
+                        <span id="vol_curr"></span> / <span id="vol_prev"></span>
+                    </p>
                 </div>
                 <div class="progress">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="{{ stats[2] * 100 /  stats[3] }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ stats[2] * 100/  stats[3] }}%"> <strong>{{ stats[2] * 100 // stats[3] }}%</strong></div>
+                    <div class="progress-bar progress-bar-striped progress-bar-animated"
+                        role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
+                        style="width: 0%;" id="progress_bar_vol">
+                        <strong></strong>
+                    </div>
                 </div>
             </div>
         </div>
+
         <div class="col-md-3">
             <div class="card" style="background-color: azure;">
-
                 <div class="card-body text-center">
                     <h5 class="card-title">Active Clients</h5>
-                    <!-- <h6 class="card-subtitle mb-2 text-muted">{{ stats[4] * 100 // (stats[4]+stats[5]) }}%</h6> -->
-                    <p class="card-text">{{ stats[4] }}  / {{ (stats[4]+stats[5]) }}</p>
+                    <p class="card-text">
+                        <span id="act-client"></span> / <span id="total-client"></span>
+                    </p>
                 </div>
-  
                 <div class="progress">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="{{stats[4] * 100 / (stats[4]+stats[5])}}" aria-valuemin="0" aria-valuemax="100" style="width: {{stats[4] * 100 / (stats[4]+stats[5])}}%"> <strong>{{stats[4] * 100 // (stats[4]+stats[5])}}%</strong></div>
+                    <div class="progress-bar progress-bar-striped progress-bar-animated"
+                        role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
+                        style="width: 0%;" id="progress_bar_client">
+                        <strong></strong>
+                    </div>
                 </div>
-
             </div>
-        </div>
+        </div> 
+
+
+
     </div>
 </div>
 
