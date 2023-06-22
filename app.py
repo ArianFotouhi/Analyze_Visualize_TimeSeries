@@ -1,13 +1,13 @@
 from flask import Flask, render_template, request, redirect, session, jsonify
-from utils import load_data, filter_data_by_cl, dropdown_menu_filter, LoungeCounter, stream_on_off, active_inactive_lounges, active_clients_percent, volume_rate, filter_unique_val_dict, lounge_crowdedness, get_notifications, ParameterCounter, record_sum_calculator, record_lister
-from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col,  users, time_alert, crowdedness_alert, Airport_Name_Col, City_Name_Col, Country_Name_Col, plot_interval
+from utils import load_data, filter_data_by_cl, dropdown_menu_filter, LoungeCounter, stream_on_off, active_inactive_lounges, active_clients_percent, volume_rate, filter_unique_val_dict, lounge_crowdedness, get_notifications, ParameterCounter, record_sum_calculator, record_lister, update_time_alert, update_plot_interval, crowdedness_alert
+from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col,  users, Airport_Name_Col, City_Name_Col, Country_Name_Col
 from authentication import Authentication
+import numpy as np
 # import pandas as pd
 
 authenticate = Authentication().authenticate
 app = Flask(__name__)
 app.secret_key = "!241$gc"
-
 
 
 @app.route('/', methods=['GET'])
@@ -44,12 +44,12 @@ def home():
 
     data = accessed_df.to_dict(orient='records')
     crowdedness = lounge_crowdedness(date='latest', alert = crowdedness_alert)
-
     
 
     active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients)
     active_clients, inactive_clients = active_clients_percent(access_clients, active_lounges, inactive_lounges)
     volume_rates, vol_curr, vol_prev = volume_rate(access_clients, amount=7)
+
     cl_lounges_ = filter_unique_val_dict('lounges')
     airport_uq_list = filter_unique_val_dict('airport')
     city_uq_list = filter_unique_val_dict('city')
@@ -57,12 +57,13 @@ def home():
 
     notifications = get_notifications(inact_loung_num,inactive_clients,crowdedness)
     
-    
+    setting = {'time_alert':np.arange(1,30), 'plot_interval':np.arange(1,30)}
 
     stat_list = [act_loung_num, inact_loung_num,vol_curr, vol_prev, len(active_clients), len(inactive_clients),inactive_lounges, crowdedness, notifications]
 
     
-    return render_template('index.html', data= data, clients= access_clients, stats= stat_list, cl_lounges_= cl_lounges_, airports = airport_uq_list, cities = city_uq_list, countries = country_uq_list)
+    return render_template('index.html', data= data, clients= access_clients, stats= stat_list, cl_lounges_= cl_lounges_, 
+                           airports = airport_uq_list, cities = city_uq_list, countries = country_uq_list, setting=setting)
 
 
   
@@ -70,16 +71,25 @@ def home():
 
 @app.route('/update_plot', methods=['POST'])
 def update_plot():
+    username = session["username"]
+    access_clients = users[username]["AccessCL"]
+
+
+
     selected_client = request.form['client']
     selected_lounge = request.form['lounge_name']
     selected_airport = request.form['airport_name']
     selected_city = request.form['city_name']
     selected_country = request.form['country_name']
 
+    time_alert = int(request.form['time_alert']) 
+    plot_interval = int(request.form['plt_interval'])
+
+    update_time_alert(time_alert)
+    update_plot_interval(plot_interval)
 
    
-    username = session["username"]
-    access_clients = users[username]["AccessCL"]
+
     
     df = load_data()
 
@@ -92,6 +102,8 @@ def update_plot():
 
     if selected_client or selected_lounge or selected_airport or selected_city or selected_country:
         active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients)
+        active_clients, inactive_clients = active_clients_percent(access_clients, active_lounges, inactive_lounges)
+        volume_rates, vol_curr, vol_prev = volume_rate(access_clients, amount=7)
 
         # lounge_num  = LoungeCounter(str(client))
 
@@ -132,8 +144,8 @@ def update_plot():
         else:
                 inactives = 0
 
-        date_list = record_lister(df[Date_col].dt.strftime('%Y-%m-%d %H:%M:%S').unique().tolist(), plot_interval)
-        vol_sum_list = record_sum_calculator(df.groupby(Date_col)[Volume_ID_Col].sum().to_list(), plot_interval)
+        date_list = record_lister(df[Date_col].dt.strftime('%Y-%m-%d %H:%M:%S').unique().tolist(), plot_interval*24)
+        vol_sum_list = record_sum_calculator(df.groupby(Date_col)[Volume_ID_Col].sum().to_list(), plot_interval*24)
 
         trace = {
             'x': date_list,
@@ -142,7 +154,7 @@ def update_plot():
             'hovertemplate': '%{text}',
             'type': 'scatter',
             'mode': 'lines',
-            'name': 'Time Series'
+            'name': 'Rates'
         }
 
         layout = {
@@ -166,7 +178,8 @@ def update_plot():
        
 
         active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients)
-
+        active_clients, inactive_clients = active_clients_percent(access_clients, active_lounges, inactive_lounges)
+        volume_rates, vol_curr, vol_prev = volume_rate(access_clients, amount=7)
 
         for client in access_clients:
             client_df = filter_data_by_cl(session["username"], df, client, access_clients)
@@ -187,8 +200,8 @@ def update_plot():
 
            
             
-            date_list = record_lister(client_df[Date_col].dt.strftime('%Y-%m-%d %H:%M:%S').unique().tolist(), plot_interval)
-            vol_sum_list = record_sum_calculator(client_df.groupby(Date_col)[Volume_ID_Col].sum().to_list(), plot_interval)
+            date_list = record_lister(client_df[Date_col].dt.strftime('%Y-%m-%d %H:%M:%S').unique().tolist(), plot_interval*24)
+            vol_sum_list = record_sum_calculator(client_df.groupby(Date_col)[Volume_ID_Col].sum().to_list(), plot_interval*24)
            
     
             trace = {
@@ -198,7 +211,7 @@ def update_plot():
                 'hovertemplate': '%{text}',
                 'type': 'scatter',
                 'mode': 'lines',
-                'name': f'Time Series'
+                'name': f'Rates'
             }
             traces.append(trace)
 
@@ -216,9 +229,15 @@ def update_plot():
 
             errors.append(error_message)
 
+      
         
-        
-        return jsonify({'traces': traces, 'layouts': layouts , 'errors': errors})
+        active_clients_num = int(len(active_clients))
+        inactive_clients_num = int(len(inactive_clients))
+
+        return jsonify({'traces': traces, 'layouts': layouts , 'errors': errors, 
+                        'lounge_act_num':act_loung_num, 'lounge_inact_num':inact_loung_num,
+                        'vol_curr':int(vol_curr),'vol_prev':int(vol_prev),
+                        'active_clients_num':active_clients_num, 'inactive_clients_num':inactive_clients_num})
 
 
 
