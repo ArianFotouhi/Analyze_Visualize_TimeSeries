@@ -90,7 +90,7 @@ $(document).ready(function() {
                     if (linePath.length > 0) {
                         var svg = d3.select(linePath[0].parentNode);
                         var gradientId = "gradient-" + i;
-                        createGradientDefs(svg, gradientId, "rgb(0, 255, 0)", "rgb(255, 0, 0)");
+                        createGradientDefs(svg, gradientId, "rgb(97, 255, 123)", "rgb(255, 0, 0)");
                         linePath[0].style.stroke = "url(#" + gradientId + ")";
                     }
                 }
