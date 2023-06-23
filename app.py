@@ -1,9 +1,9 @@
 from flask import Flask, render_template, request, redirect, session, jsonify
-from utils import load_data, filter_data_by_cl, dropdown_menu_filter, LoungeCounter, stream_on_off, active_inactive_lounges, active_clients_percent, volume_rate, filter_unique_val_dict, lounge_crowdedness, get_notifications, ParameterCounter, record_sum_calculator, record_lister, update_time_alert, update_plot_interval, crowdedness_alert
+from utils import load_data, filter_data_by_cl, dropdown_menu_filter, LoungeCounter, stream_on_off, active_inactive_lounges, active_clients_percent, volume_rate, filter_unique_val_dict, lounge_crowdedness, get_notifications, ParameterCounter, record_sum_calculator, record_lister, update_time_alert, update_plot_interval, crowdedness_alert, range_filter
 from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col,  users, Airport_Name_Col, City_Name_Col, Country_Name_Col
 from authentication import Authentication
 import numpy as np
-# import pandas as pd
+import pandas as pd
 
 authenticate = Authentication().authenticate
 app = Flask(__name__)
@@ -88,11 +88,10 @@ def update_plot():
     update_time_alert(time_alert)
     update_plot_interval(plot_interval)
 
-   
 
     
     df = load_data()
-
+    print('filtered_date', range_filter(df, pd.to_datetime('2023-06-01 00:00:00'),pd.to_datetime('2023-06-02 00:00:00'),Date_col))
 
     #scales: sec, min, hour, day, mo, year
     no_data_dict = stream_on_off(scale='day', length=time_alert)
