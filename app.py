@@ -85,13 +85,19 @@ def update_plot():
     time_alert = int(request.form['time_alert']) 
     plot_interval = int(request.form['plt_interval'])
 
+    selected_start_date = request.form['start_date']
+    selected_end_date = request.form['end_date']
+
+    print('selected_start', selected_start_date)
+    print('selected_end', selected_end_date)
+
     update_time_alert(time_alert)
     update_plot_interval(plot_interval)
 
 
     
     df = load_data()
-    print('filtered_date', range_filter(df, pd.to_datetime('2023-06-01 00:00:00'),pd.to_datetime('2023-06-02 00:00:00'),Date_col))
+    # print('filtered_date', range_filter(df, pd.to_datetime('2023-06-01 00:00:00'),pd.to_datetime('2023-06-02 00:00:00'),Date_col))
 
     #scales: sec, min, hour, day, mo, year
     no_data_dict = stream_on_off(scale='day', length=time_alert)

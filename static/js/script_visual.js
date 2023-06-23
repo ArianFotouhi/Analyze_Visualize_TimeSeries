@@ -1,4 +1,10 @@
 $(document).ready(function() {
+
+
+
+
+
+
     function createGradientDefs(svg, gradientId, startColor, endColor) {
         var gradient = svg.append("linearGradient")
             .attr("id", gradientId)
@@ -20,28 +26,37 @@ $(document).ready(function() {
     }
 
     function updatePlot() {
+    
         var selectedClient = $('#client').val();
         var selectedLounge = $('#lounge_name').val();
         var selectedAirport = $('#airport_name').val();
-
         var selectedCity = $('#city_name').val();
         var selectedCountry = $('#country_name').val();
-
         var timeAlert = $('#time_alert').val();
         var plotInterval = $('#plt_interval').val();
-
-
+    
         var currentDate = new Date();
         var lastUpdate = currentDate.toLocaleString();
         $('#last-update').text('Last Update: a few seconds ago at ' + lastUpdate);
+        
+        var startDate = $('#startDate').val();
+        var endDate = $('#endDate').val();
+
 
         $.ajax({
             url: '/update_plot',
             type: 'POST',
-            data: { client: selectedClient, lounge_name: selectedLounge, 
-                airport_name: selectedAirport, city_name: selectedCity, 
-                country_name: selectedCountry, time_alert: timeAlert,
-                plt_interval: plotInterval},
+            data: {
+                client: selectedClient,
+                lounge_name: selectedLounge,
+                airport_name: selectedAirport,
+                city_name: selectedCity,
+                country_name: selectedCountry,
+                time_alert: timeAlert,
+                plt_interval: plotInterval,
+                start_date: startDate, // Send the selected start date to the server
+                end_date: endDate // Send the selected end date to the server
+            },
 
             success: function(response) {
                 var traces = response.traces;
@@ -127,6 +142,11 @@ $(document).ready(function() {
         });
     }
 
+    $('#start-date, #end-date').datepicker({
+        format: 'yyyy-mm-dd',
+        autoclose: true
+    });
+
     function updateResults() {
         updatePlot();
     }
@@ -137,7 +157,10 @@ $(document).ready(function() {
         updateResults();
     });
 
-    
     updatePlot();
-
 });
+
+
+
+
+
