@@ -10,6 +10,8 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_notification.css') }}">
@@ -105,6 +107,23 @@
                                       {% endfor %}
                                     </select>
                                   </li>
+
+                                  <li>
+                                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+                                 
+                                    <div class="container">
+                                          <div class="col-md-12">
+                                              <input type="text" id="date-range" class="form-control" readonly placeholder="Date Period">
+                                          </div>
+                                    </div>
+                                  
+                                  
+                                  
+
+                                  </li>
+
+
                                 </ul>
                               </div>
                             </div>
@@ -236,6 +255,7 @@
     <script src="{{ url_for('static', filename='js/script_visual.js') }}"></script>
     <script src="{{ url_for('static', filename='js/dormant_button_blink.js') }}"></script>
     <script src="{{ url_for('static', filename='js/int_hub_button_blink.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/date_picker_filter.js') }}"></script>
 
 
 
