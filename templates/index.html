@@ -116,7 +116,6 @@
                                     </select>
                                   </li>
 
-                                  <li>
 
                                     <div class="form-group">
                                       <label for="startDate" style="color: antiquewhite;">Start Date</label>
@@ -127,17 +126,15 @@
                                       <label for="endDate" style="color: antiquewhite;">End Date</label>
                                       <input id="endDate" class="form-control flatpickr-input" type="text" placeholder="End Date" value="">
                                     </div>
-                                                                        
 
-                                  
-                                  
-                                  
-
-                                  </li>
+                                    <div class="form-group">
+                                      <button type="button" class="btn btn-secondary" id="resetButton">Reset</button>
+                                    </div>
 
 
                                 </ul>
                               </div>
+
                             </div>
                           </div>
                         </div>
@@ -268,6 +265,7 @@
     <script src="{{ url_for('static', filename='js/dormant_button_blink.js') }}"></script>
     <script src="{{ url_for('static', filename='js/int_hub_button_blink.js') }}"></script>
     <script src="{{ url_for('static', filename='js/date_picker_filter.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/filter_reset_button.js') }}"></script>
 
 
 

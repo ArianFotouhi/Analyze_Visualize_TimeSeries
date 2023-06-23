@@ -93,7 +93,7 @@ def update_plot():
     print('selected_end', selected_end_date)
 
     if selected_start_date != '' or selected_end_date!= '':
-        print('filtered_date', range_filter(df, pd.to_datetime(selected_start_date),pd.to_datetime(selected_end_date),Date_col))
+        df = range_filter(df, pd.to_datetime(selected_start_date),pd.to_datetime(selected_end_date),Date_col)
 
     update_time_alert(time_alert)
     update_plot_interval(plot_interval)
