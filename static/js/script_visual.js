@@ -146,10 +146,6 @@ $(document).ready(function() {
         });
     }
 
-    $('#start-date, #end-date').datepicker({
-        format: 'yyyy-mm-dd',
-        autoclose: true
-    });
 
     function updateResults() {
         updatePlot();

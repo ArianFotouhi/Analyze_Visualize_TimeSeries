@@ -90,9 +90,10 @@ def update_plot():
 
     selected_start_date = request.form['start_date']
     selected_end_date = request.form['end_date']
- 
+    
     if selected_start_date != '' or selected_end_date!= '':
         df = range_filter(df, pd.to_datetime(selected_start_date),pd.to_datetime(selected_end_date),Date_col)
+    
 
     update_time_alert(time_alert)
     update_plot_interval(plot_interval)
@@ -199,7 +200,6 @@ def update_plot():
         clients = order_clients(df,access_clients,selected_client_order)
         for client in clients:
             client_df = filter_data_by_cl(session["username"], df, client, access_clients)
-
 
             # lounge_num  = LoungeCounter(str(client))
 

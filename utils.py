@@ -21,14 +21,16 @@ def load_data():
     
     return df
 
-def range_filter(df, from_, to_,column_name):
-
-    if pd.notna(from_):
+def range_filter(df, from_, to_, column_name):
+    if pd.notna(from_) and pd.notna(to_):
+        df = df[(df[column_name] >= from_) & (df[column_name] <= to_)]
+    elif pd.notna(from_):
         df = df[(df[column_name] >= from_)]
-    if pd.notna(to_):
+    elif pd.notna(to_):
         df = df[(df[column_name] <= to_)]
 
     return df
+
 
 def filter_data_by_cl(username, df, selected_client, access_clients):
     
