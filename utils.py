@@ -3,7 +3,7 @@ from flask import session
 
 from datetime import datetime, timedelta
 import pytz
-from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col, Refuse_Col, Ratio_Col, users, time_alert, crowdedness_alert, Airport_Name_Col, City_Name_Col, Country_Name_Col
+from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col, Refuse_Col, Ratio_Col, users, time_alert, crowdedness_alert, Airport_Name_Col, City_Name_Col, Country_Name_Col, plot_interval
 
 
 
@@ -437,3 +437,21 @@ def record_lister(data, n):
         result.append(sliced_obj)
     return result
 
+
+def order_clients(df,clients, order):
+    if order =='alphabet':
+        clients.sort()
+    elif order =='pax_rate':
+        
+        username = session["username"]
+        access_clients = users[username]["AccessCL"]
+
+        cl_dict = {}
+        for client in clients:
+            client_df = filter_data_by_cl(session["username"], df, client, access_clients)
+
+            vol_sum_list = record_sum_calculator(client_df.groupby(Date_col)[Volume_ID_Col].sum().to_list(), plot_interval*24)
+            cl_dict[client] = sum(vol_sum_list)
+        clients = sorted(cl_dict,key=cl_dict.get,reverse=True)
+
+    return clients

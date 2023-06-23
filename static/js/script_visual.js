@@ -34,6 +34,9 @@ $(document).ready(function() {
         var selectedCountry = $('#country_name').val();
         var timeAlert = $('#time_alert').val();
         var plotInterval = $('#plt_interval').val();
+        var clientOrder = $('#client_order').val();
+
+        
     
         var currentDate = new Date();
         var lastUpdate = currentDate.toLocaleString();
@@ -55,7 +58,8 @@ $(document).ready(function() {
                 time_alert: timeAlert,
                 plt_interval: plotInterval,
                 start_date: startDate, // Send the selected start date to the server
-                end_date: endDate // Send the selected end date to the server
+                end_date: endDate, // Send the selected end date to the server
+                client_order: clientOrder
             },
 
             success: function(response) {

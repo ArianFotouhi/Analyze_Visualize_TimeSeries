@@ -116,6 +116,15 @@
                                     </select>
                                   </li>
 
+                                  <li class="list-group-item">
+                                    <select class="custom-select custom-select-sm" id="client_order" name="client_order">
+                                      <option value="alphabet">Default Client Order (alphabetically)</option>
+                                      
+                                      <option value="pax_rate">Passenger Rate</option>
+                                      
+                                    </select>
+                                  </li>
+
 
                                     <div class="form-group">
                                       <label for="startDate" style="color: antiquewhite;">Start Date</label>
@@ -143,6 +152,11 @@
                   </div>
                        
             </li>
+
+            <li class="nav-item">
+              <button id="update-btn" type="button" class="btn btn-primary">Update</button>
+            </li>
+
             <li class="nav-item">
                 <a class="btn btn-primary {% if stats[7]['open_to_accept'] != 0 or stats[7]['very_crowded'] != 0 %}blink_inthub{% endif %} btn-sm smaller-button" href="{{ url_for('intelligence_hub') }}">Data Intelligence Hub</a>
             </li>
@@ -151,9 +165,6 @@
                 <a class="btn btn-primary {% if stats[1] != 0 %}blink_dorm{% endif %}" href="{{ url_for('dormant') }}">Dormant</a>
             </li>
 
-            <li class="nav-item">
-                <button id="update-btn" type="button" class="btn btn-primary">Update</button>
-            </li>
 
             <li class="nav-item">
                 <a class="btn btn-primary" href="{{ url_for('logout') }}">Logout</a>

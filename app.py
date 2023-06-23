@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, session, jsonify
-from utils import load_data, filter_data_by_cl, dropdown_menu_filter, LoungeCounter, stream_on_off, active_inactive_lounges, active_clients_percent, volume_rate, filter_unique_val_dict, lounge_crowdedness, get_notifications, ParameterCounter, record_sum_calculator, record_lister, update_time_alert, update_plot_interval, crowdedness_alert, range_filter
+from utils import load_data, filter_data_by_cl, dropdown_menu_filter, LoungeCounter, stream_on_off, active_inactive_lounges, active_clients_percent, volume_rate, filter_unique_val_dict, lounge_crowdedness, get_notifications, ParameterCounter, record_sum_calculator, record_lister, update_time_alert, update_plot_interval, crowdedness_alert, range_filter, order_clients
 from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col,  users, Airport_Name_Col, City_Name_Col, Country_Name_Col
 from authentication import Authentication
 import numpy as np
@@ -86,12 +86,11 @@ def update_plot():
 
     time_alert = int(request.form['time_alert']) 
     plot_interval = int(request.form['plt_interval'])
+    selected_client_order = request.form['client_order']
 
     selected_start_date = request.form['start_date']
     selected_end_date = request.form['end_date']
-    print('selected_start', selected_start_date)
-    print('selected_end', selected_end_date)
-
+ 
     if selected_start_date != '' or selected_end_date!= '':
         df = range_filter(df, pd.to_datetime(selected_start_date),pd.to_datetime(selected_end_date),Date_col)
 
@@ -194,8 +193,11 @@ def update_plot():
         active_lounges, inactive_lounges, act_loung_num, inact_loung_num = active_inactive_lounges(access_clients)
         active_clients, inactive_clients = active_clients_percent(access_clients, active_lounges, inactive_lounges)
         volume_rates, vol_curr, vol_prev = volume_rate(access_clients, amount=7)
-
-        for client in access_clients:
+        
+        #alphabet
+        #pax_rate
+        clients = order_clients(df,access_clients,selected_client_order)
+        for client in clients:
             client_df = filter_data_by_cl(session["username"], df, client, access_clients)
 
 
