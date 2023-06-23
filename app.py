@@ -71,8 +71,10 @@ def home():
 
 @app.route('/update_plot', methods=['POST'])
 def update_plot():
+
     username = session["username"]
     access_clients = users[username]["AccessCL"]
+    df = load_data()
 
 
 
@@ -87,17 +89,17 @@ def update_plot():
 
     selected_start_date = request.form['start_date']
     selected_end_date = request.form['end_date']
-
     print('selected_start', selected_start_date)
     print('selected_end', selected_end_date)
+
+    if selected_start_date != '' or selected_end_date!= '':
+        print('filtered_date', range_filter(df, pd.to_datetime(selected_start_date),pd.to_datetime(selected_end_date),Date_col))
 
     update_time_alert(time_alert)
     update_plot_interval(plot_interval)
 
 
     
-    df = load_data()
-    # print('filtered_date', range_filter(df, pd.to_datetime('2023-06-01 00:00:00'),pd.to_datetime('2023-06-02 00:00:00'),Date_col))
 
     #scales: sec, min, hour, day, mo, year
     no_data_dict = stream_on_off(scale='day', length=time_alert)
