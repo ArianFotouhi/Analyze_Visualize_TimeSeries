@@ -19,10 +19,11 @@ def load_data():
     # df = pd.read_csv("real_data.txt")
     df[Date_col] = pd.to_datetime(df[Date_col])
     
-    #df = df[df.index % 10 == 0]
     return df
 
-
+def range_filter(df, from_, to_,column_name):
+    df = df[(df[column_name] >= from_) & (df[column_name] <= to_)]
+    return df
 
 def filter_data_by_cl(username, df, selected_client, access_clients):
     
