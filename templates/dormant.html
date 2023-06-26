@@ -40,13 +40,11 @@
 
     <h3 style="text-align: center;">Dormant Clients</h3>
     {% if stats[0] %}
-    <div class="row" style=" justify-content: center; ">
+    <div class="row" style=" text-align: center;">
     {% for client in stats[0] %}
     
-        <div class="col-md-1">
-            <ul>
+        <div class="col-md-4">
                 <li style="font-size: 2em;"><strong>{{client}}</strong></li>
-            </ul>
         </div>
     
     {% endfor %}
