@@ -19,6 +19,7 @@ plot_interval = 24
 
 users = {
     "admin": {"password": "admin", "ClientID": 'admin', 'AccessCL':['STAR_AMS', 'CL2','CL3','CL4','CL5','CL6','CL7']},
+    "user1": {"password": "pass1", "ClientID": 'user1', 'AccessCL':['CL6','CL7']},
 }
 
 # Date_col ='DATE_UTC'
