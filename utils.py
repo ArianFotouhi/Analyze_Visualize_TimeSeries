@@ -84,12 +84,13 @@ def stream_on_off(scale='sec', length=10):
     df = load_data()
     
     for i in access_clients:
-        # Assuming the 'time' column is of type datetime
 
         # Filter the DataFrame for the last record with id=X
         last_record = df[df[CLName_Col] == i].tail(1)
         # Get the timestamp of the last record
         last_time = last_record[Date_col].iat[0]
+
+     
 
         # Calculate the time difference based on the specified scale and length
         if scale == 'sec':
@@ -114,8 +115,13 @@ def stream_on_off(scale='sec', length=10):
             raise ValueError("Invalid scale. Please choose one of 'sec', 'min', 'hour', 'day', 'min', or 'year'.")
 
         # Check if the time difference is more than the specified threshold
+
+        # no_data[i] = [last_time-time_diff]
+
         if time_diff > threshold:
+            # no_data[i].append(last_time)
             no_data[i] = last_time
+        
 
     return no_data
 
@@ -415,18 +421,28 @@ def get_latest_date_time(df):
 
     return latest_date
 
-def record_sum_calculator(data,n):
+def record_sum_calculator(data,n, last_n=None):
     num_groups = len(data) // n
     
     result = []
     # Iterate over the groups and calculate the sum for each group
-    for i in range(num_groups):
-        start_index = i * n
-        end_index = start_index + n
-        group_sum = data[start_index:end_index]
-        group_sum = sum(group_sum)
-        result.append(group_sum)
-    return result
+    if last_n:
+        for i in range(num_groups-last_n,num_groups):
+            start_index = i * n
+            end_index = start_index + n
+            group_sum = data[start_index:end_index]
+            group_sum = sum(group_sum)
+            result.append(group_sum)
+        return result
+    else:
+        for i in range(num_groups):
+            start_index = i * n
+            end_index = start_index + n
+            group_sum = data[start_index:end_index]
+            group_sum = sum(group_sum)
+            result.append(group_sum)
+        return result
+
 
 def record_lister(data, n):
     num_groups = len(data) // n
@@ -441,7 +457,7 @@ def record_lister(data, n):
     return result
 
 
-def order_clients(df,clients, order, optional):
+def order_clients(df,clients, order, optional, plot_interval=1):
     if order =='alphabet':
         clients.sort()
         
@@ -459,9 +475,26 @@ def order_clients(df,clients, order, optional):
         clients = sorted(cl_dict,key=cl_dict.get,reverse=True)
     
     elif order =='alert':
+        username = session["username"]
+        access_clients = users[username]["AccessCL"]
+        df = load_data()
+
         no_date = stream_on_off(scale=optional[0],length=optional[1])
+        #order based on the max of current_rec[px] - last_rec[px]
+        #then do below to oreder (if applicable)
+        clients_dict = {}
         for client in clients:
-            if client in no_date:
+            client_df = filter_data_by_cl(session["username"], df, client, access_clients)
+            vol_sum_list = record_sum_calculator(client_df.groupby(Date_col)[Volume_ID_Col].sum().to_list(), plot_interval*24, last_n=2)
+            
+            clients_dict[client] = (vol_sum_list[-1] - vol_sum_list[-2])/ vol_sum_list[-2]
+        
+        clients = sorted(clients_dict, key=lambda k: clients_dict[k], reverse=True)
+        
+
+
+        for client in clients:
+            if client in no_date :
                 clients.remove(client)
                 clients.insert(0,client)
 
