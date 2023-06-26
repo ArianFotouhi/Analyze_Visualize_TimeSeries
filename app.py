@@ -197,7 +197,8 @@ def update_plot():
         
         #alphabet
         #pax_rate
-        clients = order_clients(df,access_clients,selected_client_order)
+        #alert
+        clients = order_clients(df,access_clients,selected_client_order, optional=['day',time_alert])
         for client in clients:
             client_df = filter_data_by_cl(session["username"], df, client, access_clients)
 
