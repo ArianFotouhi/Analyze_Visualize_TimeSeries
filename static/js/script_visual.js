@@ -46,7 +46,7 @@ $(document).ready(function() {
     
         var currentDate = new Date();
         var lastUpdate = currentDate.toLocaleString();
-        $('#last-update').text('Last Update: a few seconds ago at ' + lastUpdate);
+        $('#last-update').text('Last Update: seconds ago at ' + lastUpdate);
         
         var startDate = $('#startDate').val();
         var endDate = $('#endDate').val();
@@ -64,7 +64,7 @@ $(document).ready(function() {
                 plt_interval: plotInterval,
                 start_date: startDate, // Send the selected start date to the server
                 end_date: endDate, // Send the selected end date to the server
-                client_order: clientOrder
+                client_order: clientOrder,
             },
 
             success: function(response) {
