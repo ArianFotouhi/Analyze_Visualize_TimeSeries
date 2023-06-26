@@ -477,7 +477,7 @@ def order_clients(df,clients, order, optional, plot_interval=1):
     elif order =='alert':
         username = session["username"]
         access_clients = users[username]["AccessCL"]
-        df = load_data()
+        
 
         no_date = stream_on_off(scale=optional[0],length=optional[1])
         #order based on the max of current_rec[px] - last_rec[px]
@@ -486,9 +486,10 @@ def order_clients(df,clients, order, optional, plot_interval=1):
         for client in clients:
             client_df = filter_data_by_cl(session["username"], df, client, access_clients)
             vol_sum_list = record_sum_calculator(client_df.groupby(Date_col)[Volume_ID_Col].sum().to_list(), plot_interval*24, last_n=2)
-            
-            clients_dict[client] = (vol_sum_list[-1] - vol_sum_list[-2])/ vol_sum_list[-2]
-        
+            if vol_sum_list[-2] != 0:
+                clients_dict[client] = (vol_sum_list[-1] - vol_sum_list[-2])/ vol_sum_list[-2]
+            else:
+                clients_dict[client] = 1000
         clients = sorted(clients_dict, key=lambda k: clients_dict[k], reverse=True)
         
 
