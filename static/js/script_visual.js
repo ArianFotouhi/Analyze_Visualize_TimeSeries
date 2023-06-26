@@ -12,7 +12,7 @@ $(document).ready(function() {
     }
       
     // Usage example
-    var plotsPerRow = calculatePlotsPerRow();
+    
 
     function createGradientDefs(svg, gradientId, startColor, endColor) {
         var gradient = svg.append("linearGradient")
@@ -95,16 +95,15 @@ $(document).ready(function() {
 
                 var chartsContainer = $('#charts-container');
                 chartsContainer.empty();
-                var plotsPerRow = 2;
-                
+                var plotsPerRow = calculatePlotsPerRow();
 
                 for (var j = 0; j < Math.ceil(traces.length / plotsPerRow); j++) {
                     // Create a new row for each set of plots
                     var rowDiv = $('<div>').addClass('row');
                     chartsContainer.append(rowDiv);
                     
-                    var paragraph = $('<p>').text("hey you!");
-                    chartsContainer.append(paragraph);
+                    // var paragraph = $('<p>').text("hey you!");
+                    // chartsContainer.append(paragraph);
 
                     //each slide of carousel for 
 
