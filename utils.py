@@ -78,11 +78,12 @@ def ParameterCounter(name,base, to_be_counted):
 
 
 def stream_on_off(scale='sec', length=10):
+    username = session["username"]
+    access_clients = users[username]["AccessCL"]
     no_data = {}
     df = load_data()
-    # unique_ids = df[CLName_Col].nunique()
-    unique_ids = set(df[CLName_Col].unique())
-    for i in unique_ids:
+    
+    for i in access_clients:
         # Assuming the 'time' column is of type datetime
 
         # Filter the DataFrame for the last record with id=X
@@ -440,9 +441,10 @@ def record_lister(data, n):
     return result
 
 
-def order_clients(df,clients, order):
+def order_clients(df,clients, order, optional):
     if order =='alphabet':
         clients.sort()
+        
     elif order =='pax_rate':
         
         username = session["username"]
@@ -455,5 +457,13 @@ def order_clients(df,clients, order):
             vol_sum_list = record_sum_calculator(client_df.groupby(Date_col)[Volume_ID_Col].sum().to_list(), plot_interval*24)
             cl_dict[client] = sum(vol_sum_list)
         clients = sorted(cl_dict,key=cl_dict.get,reverse=True)
+    
+    elif order =='alert':
+        no_date = stream_on_off(scale=optional[0],length=optional[1])
+        for client in clients:
+            if client in no_date:
+                clients.remove(client)
+                clients.insert(0,client)
+
 
     return clients
