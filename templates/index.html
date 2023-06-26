@@ -44,7 +44,7 @@
                  
             </li> -->
             <li class="nav-item" style="color: white;">
-                <div id="last-update" style="font-size: 0.7em;"></div>
+                <div id="last-update" style="font-size: 1em;"></div>
             </li>
             <li class="nav-item">
                 <div class="dropdown">
@@ -101,7 +101,7 @@
                                   </li>
                                   <li class="list-group-item">
                                     <select class="custom-select custom-select-sm" id="time_alert" name="time_alert">
-                                      <option value="20">Default Data Alert (20 days)</option>
+                                      <option value="20">Data Alert Default (20 days)</option>
                                       {% for time_alert in setting['time_alert'] %}
                                       <option value="{{ time_alert }}">{{ time_alert }} (day)</option>
                                       {% endfor %}
@@ -109,7 +109,7 @@
                                   </li>
                                   <li class="list-group-item">
                                     <select class="custom-select custom-select-sm" id="plt_interval" name="plt_interval">
-                                      <option value="1">Default Plot Interval (1 day)</option>
+                                      <option value="1">Plot Interval Default (1 day)</option>
                                       {% for plt_interval in setting['plot_interval'] %}
                                       <option value="{{ plt_interval }}">{{ plt_interval }} (day)</option>
                                       {% endfor %}
@@ -118,7 +118,7 @@
 
                                   <li class="list-group-item">
                                     <select class="custom-select custom-select-sm" id="client_order" name="client_order">
-                                      <option value="alert">Default Client Order (Alert)</option>
+                                      <option value="alert">Client Order Default (Alert)</option>
                                       
                                       <option value="alphabet">Alphabet</option>
                                       <option value="pax_rate">Passenger Rate</option>
