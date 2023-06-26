@@ -197,8 +197,7 @@ def update_plot():
         
         #alphabet
         #pax_rate
-        #alert
-        clients = order_clients(df,access_clients,selected_client_order, optional=['day',time_alert])
+        clients = order_clients(df,access_clients,selected_client_order, optional=['day',time_alert],plot_interval=plot_interval)
         for client in clients:
             client_df = filter_data_by_cl(session["username"], df, client, access_clients)
 
@@ -233,7 +232,7 @@ def update_plot():
             traces.append(trace)
 
             layout = {
-                'title': f'{client} Active Lounge {actives}/{ actives + inactives}, AP No. {airport_num}',
+                'title': f'{client} Lounge {actives}/{ actives + inactives}, AP No. {airport_num}',
                 'xaxis': {'title': 'Date'},
                 'yaxis': {'title': 'Rate'}
             }
