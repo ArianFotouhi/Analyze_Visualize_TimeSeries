@@ -4,8 +4,11 @@ from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col,  users, A
 from authentication import Authentication
 import numpy as np
 import pandas as pd
+from plotter import Plotter
 
 authenticate = Authentication().authenticate
+
+
 app = Flask(__name__)
 app.secret_key = "!241$gc"
 
@@ -218,8 +221,11 @@ def update_plot():
             
             date_list = record_lister(client_df[Date_col].dt.strftime('%Y-%m-%d %H:%M:%S').unique().tolist(), plot_interval*24)
             vol_sum_list = record_sum_calculator(client_df.groupby(Date_col)[Volume_ID_Col].sum().to_list(), plot_interval*24)
-           
-    
+
+            pltr = Plotter(date_list, vol_sum_list, f'{client} {actives}/{actives + inactives}, AP No. {airport_num}', 'Date', 'Passebgers Rate')
+            pltr.save_plot(f'{client}.jpg')  # Provide a valid filename with extension
+
+            
             trace = {
                 'x': date_list,
                 'y': vol_sum_list,
@@ -232,10 +238,17 @@ def update_plot():
             traces.append(trace)
 
             layout = {
-                'title': f'{client} Lounge {actives}/{ actives + inactives}, AP No. {airport_num}',
+                'title': {
+                        'text': f'{client} {actives}/{actives + inactives}, AP No. {airport_num}',
+                        'font': {
+                            'size': 10  # Adjust the font size as desired
+                        }
+                    },
+                # 'title': f'{client} {actives}/{ actives + inactives}, AP No. {airport_num}',
                 'xaxis': {'title': 'Date'},
                 'yaxis': {'title': 'Rate'}
             }
+           
             layouts.append(layout)
            
             if str(client) in list(no_data_dict.keys()):
@@ -250,7 +263,7 @@ def update_plot():
         active_clients_num = int(len(active_clients))
         inactive_clients_num = int(len(inactive_clients))
 
-        return jsonify({'traces': traces, 'layouts': layouts , 'errors': errors, 
+        return jsonify({'traces': traces, 'layouts': layouts , 'errors': errors, 'image':True,
                         'lounge_act_num':act_loung_num, 'lounge_inact_num':inact_loung_num,
                         'vol_curr':int(vol_curr),'vol_prev':int(vol_prev),
                         'active_clients_num':active_clients_num, 'inactive_clients_num':inactive_clients_num})
