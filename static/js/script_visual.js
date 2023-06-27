@@ -81,8 +81,14 @@ $(document).ready(function() {
 
                 var vol_curr = response.vol_curr;
                 var vol_prev = response.vol_prev
-                $('#vol_curr').text(vol_curr);
-                $('#vol_prev').text(vol_prev);
+                $('#vol_curr').text(formatNumberWithCommas(vol_curr));
+                $('#vol_prev').text(formatNumberWithCommas(vol_prev));
+                
+                function formatNumberWithCommas(number) {
+                    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                }
+
+
                 $('#progress_bar_vol').css('width', (vol_curr * 100 / (vol_prev)) + '%');
                 $('#progress_bar_vol strong').text((vol_curr * 100 / (vol_prev)).toFixed(2) + '%');
 
