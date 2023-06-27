@@ -37,6 +37,10 @@ body {
     background-color: white;
 }
 
+.navbar-nav .nav-item .btn {
+    margin-top: 3px;
+    margin-bottom: 3px;
+}
 
 
 .main-svg{ 
