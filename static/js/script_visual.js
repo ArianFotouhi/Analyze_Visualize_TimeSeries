@@ -111,32 +111,38 @@ $(document).ready(function() {
                 var chartsContainer = $('#charts-container');
                 chartsContainer.empty();
 
-                if(image){
-                    
+                if (image) {
                     document.getElementById('parag').style.display = 'block'; // Show the paragraph
-
-                    // Iterate over the keys of the image_info dictionary
-                    Object.keys(image_info).forEach(function(key) {
-                        // Get the image information for the current key
-                        var imageData = image_info[key];
-
-                        // Create an image element with the decoded image data
-                        var img = document.createElement("img");
-                        img.src = "data:image/png;base64," + imageData;
-                        img.style.width = "400px";
-                        img.style.height = "auto";
-
-                        // Create a div element for each image
-                        var div = document.createElement("div");
-                        div.appendChild(img);
-
-                        // Append the image div to the plotContainer div
-                        document.getElementById("plotContainer").appendChild(div);
+                  
+                    // Create a container div to hold all the plots
+                    var container = document.createElement("div");
+                    container.style.display = "flex";
+                    container.style.flexWrap = "wrap";
+                    container.style.alignItems = "center";
+                  
+                    // Iterate over the image_info list
+                    image_info.forEach(function(imageData) {
+                      // Create an image element with the decoded image data
+                      var img = document.createElement("img");
+                      img.src = "data:image/png;base64," + imageData;
+                      img.style.width = "250px";
+                      img.style.height = "auto";
+                      img.style.margin = "10px"; // Add some margin between images
+                  
+                      // Append each image element to the container
+                      container.appendChild(img);
                     });
-
-                    
-                    
-                } else {
+                  
+                    // Clear the plotContainer div
+                    var plotContainer = document.getElementById("plotContainer");
+                    while (plotContainer.firstChild) {
+                      plotContainer.removeChild(plotContainer.firstChild);
+                    }
+                  
+                    // Append the new container to the plotContainer div
+                    plotContainer.appendChild(container);
+                  }
+                   else {
                     document.getElementById('parag').style.display = 'none'; // Hide the paragraph
 
 
