@@ -201,7 +201,7 @@ def update_plot():
         #alphabet
         #pax_rate
         clients = order_clients(df,access_clients,selected_client_order, optional=['day',time_alert],plot_interval=plot_interval)
-        image_dict={}
+        image_list=[]
         print('clients', clients)
         for client in clients:
             client_df = filter_data_by_cl(session["username"], df, client, access_clients)
@@ -227,7 +227,7 @@ def update_plot():
             pltr = Plotter(date_list, vol_sum_list, f'{client} {actives}/{actives + inactives}, AP No. {airport_num}', 'Date', 'Passebgers Rate')
             image_info = pltr.save_plot(f'{client}')  
 
-            image_dict[client] = image_info
+            image_list.append(image_info)
 
             trace = {
                 'x': date_list,
@@ -265,11 +265,11 @@ def update_plot():
         
         active_clients_num = int(len(active_clients))
         inactive_clients_num = int(len(inactive_clients))
-
+    
         return jsonify({'traces': traces, 'layouts': layouts , 'errors': errors, 'image':True,
                         'lounge_act_num':act_loung_num, 'lounge_inact_num':inact_loung_num,
                         'vol_curr':int(vol_curr),'vol_prev':int(vol_prev),
-                        'active_clients_num':active_clients_num, 'inactive_clients_num':inactive_clients_num,'cl':clients, 'image_info':image_dict})
+                        'active_clients_num':active_clients_num, 'inactive_clients_num':inactive_clients_num,'cl':clients, 'image_info':image_list})
 
 
 
