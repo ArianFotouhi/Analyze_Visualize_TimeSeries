@@ -109,7 +109,11 @@
                                   </li>
                                   <li class="list-group-item">
                                     <select class="custom-select custom-select-sm" id="plt_interval" name="plt_interval">
+<<<<<<< HEAD
                                       <option value="10">Plot Interval Default (10 day)</option>
+=======
+                                      <option value="1">Plot Interval Default (1 day)</option>
+>>>>>>> c186901f12d4e591876d83ba27936947ce33975f
                                       {% for plt_interval in setting['plot_interval'] %}
                                       <option value="{{ plt_interval }}">{{ plt_interval }} (day)</option>
                                       {% endfor %}
@@ -274,10 +278,13 @@
 </div>
 
 
+<<<<<<< HEAD
 <div id="plotContainer"></div>
 
 <p id="parag">hi {{cl}}</p>
 
+=======
+>>>>>>> c186901f12d4e591876d83ba27936947ce33975f
 
     <script src="{{ url_for('static', filename='js/script_visual.js') }}"></script>
     <script src="{{ url_for('static', filename='js/dormant_button_blink.js') }}"></script>

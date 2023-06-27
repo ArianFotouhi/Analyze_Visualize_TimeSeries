@@ -75,7 +75,11 @@ $(document).ready(function() {
                 var errors = response.errors;
 
                 var image = response.image;
+<<<<<<< HEAD
                 
+=======
+
+>>>>>>> c186901f12d4e591876d83ba27936947ce33975f
                 var lounge_act_num = response.lounge_act_num;
                 var lounge_inact_num = response.lounge_inact_num
                 $('#act-lounge').text(lounge_act_num);
@@ -103,17 +107,21 @@ $(document).ready(function() {
                 $('#progress_bar_client').css('width', (active_clients_num * 100 / (active_clients_num + inactive_clients_num)) + '%');
                 $('#progress_bar_client strong').text((active_clients_num * 100 / (active_clients_num + inactive_clients_num)).toFixed(2) + '%');
 
+<<<<<<< HEAD
 
                 var cl = response.cl;
                 var image_info = response.image_info;
                 
 
+=======
+>>>>>>> c186901f12d4e591876d83ba27936947ce33975f
                 var chartsContainer = $('#charts-container');
                 chartsContainer.empty();
 
                 if(image){
                     
                     document.getElementById('parag').style.display = 'block'; // Show the paragraph
+<<<<<<< HEAD
 
                     // Iterate over the keys of the image_info dictionary
                     Object.keys(image_info).forEach(function(key) {
@@ -150,6 +158,23 @@ $(document).ready(function() {
                     // var paragraph = $('<p>').text("hey you!");
                     // chartsContainer.append(paragraph);
 
+=======
+                
+                } else {
+                    document.getElementById('parag').style.display = 'none'; // Hide the paragraph
+
+
+                var plotsPerRow = calculatePlotsPerRow();
+
+                for (var j = 0; j < Math.ceil(traces.length / plotsPerRow); j++) {
+                    // Create a new row for each set of plots
+                    var rowDiv = $('<div>').addClass('row');
+                    chartsContainer.append(rowDiv);
+                    
+                    // var paragraph = $('<p>').text("hey you!");
+                    // chartsContainer.append(paragraph);
+
+>>>>>>> c186901f12d4e591876d83ba27936947ce33975f
                     //each slide of carousel for 
 
 
