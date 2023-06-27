@@ -1,9 +1,20 @@
 $(document).ready(function() {
 
-
-
-
-
+    function calculatePlotsPerRow() {
+        var windowWidth = window.innerWidth;
+        var plotWidth = 250; // Width of each plot in pixels
+        var margin = 0; // Margin between plots in pixels
+      
+        // Calculate the number of plots per row
+        var plotsPerRow = Math.floor((windowWidth - margin) / (plotWidth + margin));
+      
+        return plotsPerRow;
+    }
+    
+    
+    
+    // Usage example
+    
 
     function createGradientDefs(svg, gradientId, startColor, endColor) {
         var gradient = svg.append("linearGradient")
@@ -26,7 +37,6 @@ $(document).ready(function() {
     }
 
     function updatePlot() {
-    
         var selectedClient = $('#client').val();
         var selectedLounge = $('#lounge_name').val();
         var selectedAirport = $('#airport_name').val();
@@ -35,16 +45,13 @@ $(document).ready(function() {
         var timeAlert = $('#time_alert').val();
         var plotInterval = $('#plt_interval').val();
         var clientOrder = $('#client_order').val();
-
-        
     
         var currentDate = new Date();
         var lastUpdate = currentDate.toLocaleString();
-        $('#last-update').text('Last Update: a few seconds ago at ' + lastUpdate);
+        $('#last-update').text('Last Update: seconds ago at ' + lastUpdate);
         
         var startDate = $('#startDate').val();
         var endDate = $('#endDate').val();
-
 
         $.ajax({
             url: '/update_plot',
@@ -59,7 +66,7 @@ $(document).ready(function() {
                 plt_interval: plotInterval,
                 start_date: startDate, // Send the selected start date to the server
                 end_date: endDate, // Send the selected end date to the server
-                client_order: clientOrder
+                client_order: clientOrder,
             },
 
             success: function(response) {
@@ -67,6 +74,8 @@ $(document).ready(function() {
                 var layouts = response.layouts;
                 var errors = response.errors;
 
+                var image = response.image;
+                
                 var lounge_act_num = response.lounge_act_num;
                 var lounge_inact_num = response.lounge_inact_num
                 $('#act-lounge').text(lounge_act_num);
@@ -74,11 +83,16 @@ $(document).ready(function() {
                 $('#progress_bar_lounge').css('width', (lounge_act_num * 100 / (lounge_act_num + lounge_inact_num)) + '%');
                 $('#progress_bar_lounge strong').text((lounge_act_num * 100 / (lounge_act_num + lounge_inact_num)).toFixed(2) + '%');
 
-
                 var vol_curr = response.vol_curr;
                 var vol_prev = response.vol_prev
-                $('#vol_curr').text(vol_curr);
-                $('#vol_prev').text(vol_prev);
+                $('#vol_curr').text(formatNumberWithCommas(vol_curr));
+                $('#vol_prev').text(formatNumberWithCommas(vol_prev));
+                
+                function formatNumberWithCommas(number) {
+                    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                }
+
+
                 $('#progress_bar_vol').css('width', (vol_curr * 100 / (vol_prev)) + '%');
                 $('#progress_bar_vol strong').text((vol_curr * 100 / (vol_prev)).toFixed(2) + '%');
 
@@ -90,56 +104,113 @@ $(document).ready(function() {
                 $('#progress_bar_client strong').text((active_clients_num * 100 / (active_clients_num + inactive_clients_num)).toFixed(2) + '%');
 
 
+                var cl = response.cl;
+                var image_info = response.image_info;
+                
+
                 var chartsContainer = $('#charts-container');
                 chartsContainer.empty();
 
-                for (var i = 0; i < traces.length; i++) {
-                    var chartId = 'chart-' + i;
-                    var chartDiv = $('<div>').attr('id', chartId).addClass('plot');
-                    if (selectedClient !== '' || selectedLounge !=='' || selectedAirport!== '' || selectedCity!== '' || selectedCountry!== '') {
-                        chartDiv.addClass('single');
-                    }
-                    chartsContainer.append(chartDiv);
-                    var data = [traces[i]];
-                    var layout = layouts[i];
-                    Plotly.newPlot(chartId, data, layout);
+                if(image){
+                    
+                    document.getElementById('parag').style.display = 'block'; // Show the paragraph
 
-                    var arrowDiv = $('<div>').addClass('arrow');
-                    var arrowIcon = '';
+                    // Iterate over the keys of the image_info dictionary
+                    Object.keys(image_info).forEach(function(key) {
+                        // Get the image information for the current key
+                        var imageData = image_info[key];
 
-                    if (errors[i]) {
-                        var errorMessageDiv = $('<div>').addClass('error-message').text(errors[i]);
-                        chartDiv.append(errorMessageDiv);
-                        chartDiv.css('position', 'relative');
-                        chartDiv.css('background-color', 'white');
+                        // Create an image element with the decoded image data
+                        var img = document.createElement("img");
+                        img.src = "data:image/png;base64," + imageData;
+                        img.style.width = "400px";
+                        img.style.height = "auto";
 
-                          
-                                            } else {
-                        var lastRecord = data[0].y[data[0].y.length - 1];
-                        var prevRecord = data[0].y[data[0].y.length - 2];
-                        var growthPercentage = ((lastRecord - prevRecord) / prevRecord) * 100;
+                        // Create a div element for each image
+                        var div = document.createElement("div");
+                        div.appendChild(img);
 
-                        if (growthPercentage > 0) {
-                            arrowIcon = $('<i>').addClass('up-arrow').text('▲');
+                        // Append the image div to the plotContainer div
+                        document.getElementById("plotContainer").appendChild(div);
+                    });
+
+                    
+                    
+                } else {
+                    document.getElementById('parag').style.display = 'none'; // Hide the paragraph
+
+
+                var plotsPerRow = calculatePlotsPerRow();
+
+                for (var j = 0; j < Math.ceil(traces.length / plotsPerRow); j++) {
+                    // Create a new row for each set of plots
+                    var rowDiv = $('<div>').addClass('row');
+                    chartsContainer.append(rowDiv);
+                    
+                    // var paragraph = $('<p>').text("hey you!");
+                    // chartsContainer.append(paragraph);
+
+                    //each slide of carousel for 
+
+
+                
+                    // Calculate the start and end index for the current row
+                    var startIndex = j * plotsPerRow;
+                    var endIndex = Math.min(startIndex + plotsPerRow, traces.length);
+
+                    // Loop through the plots within the current row range
+                    for (var i = startIndex; i < endIndex; i++) {
+
+                        var chartId = 'chart-' + i;
+                        var chartDiv = $('<div>').attr('id', chartId).addClass('plot');
+                
+                        if (selectedClient !== '' || selectedLounge !== '' || selectedAirport !== '' || selectedCity !== '' || selectedCountry !== '') {
+                            chartDiv.addClass('single');
+                        }
+                
+                        rowDiv.append(chartDiv);
+                
+                        var data = [traces[i]];
+                        var layout = layouts[i];
+                        Plotly.newPlot(chartId, data, layout);
+
+                        var arrowDiv = $('<div>').addClass('arrow');
+                        var arrowIcon = '';
+
+                        if (errors[i]) {
+                            var errorMessageDiv = $('<div>').addClass('error-message').text(errors[i]);
+                            chartDiv.append(errorMessageDiv);
+                            chartDiv.css('position', 'relative');
                             chartDiv.css('background-color', 'white');
-                                                    } else if (growthPercentage < 0) {
-                            arrowIcon = $('<i>').addClass('down-arrow').text('▼');
-                            chartDiv.css('background-color', 'white');
-                                                    }
-                        arrowDiv.append(arrowIcon);
-                        arrowDiv.append('<br>');
-                        arrowDiv.append(growthPercentage.toFixed(2) + '%');
-                    }
+                        } else {
+                            var lastRecord = data[0].y[data[0].y.length - 1];
+                            var prevRecord = data[0].y[data[0].y.length - 2];
+                            var growthPercentage = ((lastRecord - prevRecord) / prevRecord) * 100;
 
-                    chartDiv.append(arrowDiv);
+                            if (growthPercentage > 0) {
+                                arrowIcon = $('<i>').addClass('up-arrow').text('▲');
+                                chartDiv.css('background-color', 'white');
+                            } else if (growthPercentage < 0) {
+                                arrowIcon = $('<i>').addClass('down-arrow').text('▼');
+                                chartDiv.css('background-color', 'white');
+                            }
 
-                    var chartElement = document.getElementById(chartId);
-                    var linePath = chartElement.getElementsByClassName('js-line');
-                    if (linePath.length > 0) {
-                        var svg = d3.select(linePath[0].parentNode);
-                        var gradientId = "gradient-" + i;
-                        createGradientDefs(svg, gradientId, "rgb(97, 255, 123)", "rgb(255, 0, 0)");
-                        linePath[0].style.stroke = "url(#" + gradientId + ")";
+                            arrowDiv.append(arrowIcon);
+                            arrowDiv.append('<br>');
+                            arrowDiv.append(growthPercentage.toFixed(2) + '%');
+                        }
+
+                        chartDiv.append(arrowDiv);
+
+                        var chartElement = document.getElementById(chartId);
+                        var linePath = chartElement.getElementsByClassName('js-line');
+                        if (linePath.length > 0) {
+                            var svg = d3.select(linePath[0].parentNode);
+                            var gradientId = "gradient-" + i;
+                            createGradientDefs(svg, gradientId, "rgb(97, 255, 123)", "rgb(255, 0, 0)");
+                            linePath[0].style.stroke = "url(#" + gradientId + ")";
+                            }
+                        }
                     }
                 }
             }
@@ -159,8 +230,3 @@ $(document).ready(function() {
 
     updatePlot();
 });
-
-
-
-
-

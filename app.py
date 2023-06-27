@@ -4,8 +4,11 @@ from config import Date_col, Lounge_ID_Col, CLName_Col, Volume_ID_Col,  users, A
 from authentication import Authentication
 import numpy as np
 import pandas as pd
+from plotter import Plotter
 
 authenticate = Authentication().authenticate
+
+
 app = Flask(__name__)
 app.secret_key = "!241$gc"
 
@@ -197,7 +200,9 @@ def update_plot():
         
         #alphabet
         #pax_rate
-        clients = order_clients(df,access_clients,selected_client_order)
+        clients = order_clients(df,access_clients,selected_client_order, optional=['day',time_alert],plot_interval=plot_interval)
+        image_dict={}
+        print('clients', clients)
         for client in clients:
             client_df = filter_data_by_cl(session["username"], df, client, access_clients)
 
@@ -214,12 +219,16 @@ def update_plot():
             airport_list, airport_num = ParameterCounter(name = client, base= CLName_Col, to_be_counted= Airport_Name_Col)
             
 
-           
+
             
             date_list = record_lister(client_df[Date_col].dt.strftime('%Y-%m-%d %H:%M:%S').unique().tolist(), plot_interval*24)
             vol_sum_list = record_sum_calculator(client_df.groupby(Date_col)[Volume_ID_Col].sum().to_list(), plot_interval*24)
-           
-    
+
+            pltr = Plotter(date_list, vol_sum_list, f'{client} {actives}/{actives + inactives}, AP No. {airport_num}', 'Date', 'Passebgers Rate')
+            image_info = pltr.save_plot(f'{client}')  
+
+            image_dict[client] = image_info
+
             trace = {
                 'x': date_list,
                 'y': vol_sum_list,
@@ -232,10 +241,17 @@ def update_plot():
             traces.append(trace)
 
             layout = {
-                'title': f'{client} Active Lounge {actives}/{ actives + inactives}, AP No. {airport_num}',
+                'title': {
+                        'text': f'{client} {actives}/{actives + inactives}, AP No. {airport_num}',
+                        'font': {
+                            'size': 10  # Adjust the font size as desired
+                        }
+                    },
+                # 'title': f'{client} {actives}/{ actives + inactives}, AP No. {airport_num}',
                 'xaxis': {'title': 'Date'},
                 'yaxis': {'title': 'Rate'}
             }
+           
             layouts.append(layout)
            
             if str(client) in list(no_data_dict.keys()):
@@ -250,10 +266,10 @@ def update_plot():
         active_clients_num = int(len(active_clients))
         inactive_clients_num = int(len(inactive_clients))
 
-        return jsonify({'traces': traces, 'layouts': layouts , 'errors': errors, 
+        return jsonify({'traces': traces, 'layouts': layouts , 'errors': errors, 'image':True,
                         'lounge_act_num':act_loung_num, 'lounge_inact_num':inact_loung_num,
                         'vol_curr':int(vol_curr),'vol_prev':int(vol_prev),
-                        'active_clients_num':active_clients_num, 'inactive_clients_num':inactive_clients_num})
+                        'active_clients_num':active_clients_num, 'inactive_clients_num':inactive_clients_num,'cl':clients, 'image_info':image_dict})
 
 
 
