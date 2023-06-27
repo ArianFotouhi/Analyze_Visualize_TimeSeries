@@ -2,15 +2,17 @@ $(document).ready(function() {
 
     function calculatePlotsPerRow() {
         var windowWidth = window.innerWidth;
-        var plotWidth = 350; // Width of each plot in pixels
-        var margin = 20; // Margin between plots in pixels
+        var plotWidth = 250; // Width of each plot in pixels
+        var margin = 0; // Margin between plots in pixels
       
         // Calculate the number of plots per row
         var plotsPerRow = Math.floor((windowWidth - margin) / (plotWidth + margin));
       
         return plotsPerRow;
     }
-      
+    
+    
+    
     // Usage example
     
 
@@ -72,6 +74,8 @@ $(document).ready(function() {
                 var layouts = response.layouts;
                 var errors = response.errors;
 
+                var image = response.image;
+
                 var lounge_act_num = response.lounge_act_num;
                 var lounge_inact_num = response.lounge_inact_num
                 $('#act-lounge').text(lounge_act_num);
@@ -101,6 +105,15 @@ $(document).ready(function() {
 
                 var chartsContainer = $('#charts-container');
                 chartsContainer.empty();
+
+                if(image){
+                    
+                    document.getElementById('parag').style.display = 'block'; // Show the paragraph
+                
+                } else {
+                    document.getElementById('parag').style.display = 'none'; // Hide the paragraph
+
+
                 var plotsPerRow = calculatePlotsPerRow();
 
                 for (var j = 0; j < Math.ceil(traces.length / plotsPerRow); j++) {
@@ -170,6 +183,7 @@ $(document).ready(function() {
                             var gradientId = "gradient-" + i;
                             createGradientDefs(svg, gradientId, "rgb(97, 255, 123)", "rgb(255, 0, 0)");
                             linePath[0].style.stroke = "url(#" + gradientId + ")";
+                            }
                         }
                     }
                 }
